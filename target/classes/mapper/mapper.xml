@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="mapper">
+  	<resultMap type="map" id="rsList">
+  		<result column="SEQ" property="seq"/>
+  		<result column="MEM_NAME" property="memName"/>
+  		<result column="MEM_ID" property="memId"/>
+  		<result column="BOARD_SUBJECT" property="boardSubject"/>
+  		<result column="BOARD_CONTENT" property="boardContent"/>
+  		<result column="VIEW_CNT" property="viewCnt"/>
+  		<result column="REG_DATE" property="regDate"/>
+  		<result column="UPT_DATE" property="uptDate"/>
+  	</resultMap>
+  	
+  	<!-- 게시글 검색 -->
+    <sql id="search">
+        <!-- 검색 키워드가 있을 때 -->
+        <if test="keyword != null and keyword != ''">
+            <choose>
+<!--                 검색 유형이 있을 때 -->
+                <when test="searchType != null and searchType != ''">
+                    <choose>
+                        <when test="'title'.equals( searchType )">
+                            AND BOARD_SUBJECT LIKE '%'||#{keyword}||'%'
+                        </when>
+                        <when test="'content'.equals( searchType )">
+                            AND BOARD_CONTENT LIKE '%'||#{keyword}||'%'
+                        </when>
+                        <when test="'writer'.equals( searchType )">
+                            AND MEM_NAME LIKE '%'||#{keyword}||'%'
+                        </when>
+                    </choose>
+                </when>
+<!--                 전체 검색일 때 때 -->
+                <otherwise>
+                    AND (
+                    BOARD_SUBJECT LIKE '%'||#{keyword}||'%'
+                    OR BOARD_CONTENT LIKE '%'||#{keyword}||'%'
+                    )
+                </otherwise>
+            </choose>
+        </if>
+    </sql>
+  
+ 	<select id="list" resultType="com.com.com.BoardVO.BoardResponse">
+  		SELECT /*+ INDEX_DESC(board_study) */
+  			SEQ AS seq
+			,MEM_NAME AS memName
+			,MEM_ID AS memId
+			,BOARD_SUBJECT AS boardSubject
+			,BOARD_CONTENT AS boardContent
+			,TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS') AS regDate
+			,TO_CHAR(UPT_DATE, 'YYYY-MM-DD HH24:MI:SS') AS uptDate
+			,VIEW_CNT AS viewCnt
+			,USEYN
+		FROM board_study
+		WHERE 1=1 <include refid="search"/>
+  	</select>
+  	
+  	<select id="getListPaging"  resultType="com.com.com.BoardVO.BoardResponse">
+  		<![CDATA[
+  		select 
+  			SEQ
+			,MEM_NAME
+			,MEM_ID
+			,BOARD_SUBJECT
+			,BOARD_CONTENT
+			,REG_DATE
+			,UPT_DATE
+			,VIEW_CNT
+			,USEYN
+		from (select /*+ INDEX_DESC(board_study) */ board_study
+		]]>
+  	</select>
+  	
+  	<select id="view" resultType="com.com.com.BoardVO.BoardResponse">
+  		select
+  			SEQ AS seq
+			,MEM_NAME AS memName
+			,MEM_ID AS memId
+			,BOARD_SUBJECT AS boardSubject
+			,BOARD_CONTENT AS boardContent
+			,TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS') AS regDate
+			,TO_CHAR(UPT_DATE, 'YYYY-MM-DD HH24:MI:SS') AS uptDate
+			,VIEW_CNT AS viewCnt
+			,USEYN
+		from board_study
+		where 
+			SEQ = #{seq}
+  	</select>
+  	
+  	<insert id="save">
+  		insert INTO board_study(
+  			SEQ
+  			,MEM_NAME
+			,MEM_ID
+			,BOARD_SUBJECT
+			,BOARD_CONTENT
+			,REG_DATE
+			,UPT_DATE
+			,VIEW_CNT
+			,USEYN
+		)
+		values(
+			(SELECT NVL(MAX(seq),0) FROM board_study) + 1
+			,#{memName}
+			,#{memId}
+			,#{boardSubject}
+			,#{boardContent}
+			,sysdate
+			,null
+			,0
+			,null
+		)
+  	</insert>
+  	
+  	<update id="update">
+  		UPDATE board_study
+  		SET
+  			SEQ = #{seq}
+  			,MEM_NAME = #{memName}
+			,MEM_ID = #{memId}
+			,BOARD_SUBJECT = #{boardSubject}
+			,BOARD_CONTENT = #{boardContent}
+			,UPT_DATE = sysdate
+		WHERE
+			SEQ = #{seq}
+  	</update>
+  	
+  	<delete id="delete">
+  		DELETE FROM board_study
+  		WHERE
+  			SEQ = #{seq}
+  	</delete>
+  	
+  </mapper>
