@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.com.com.BoardService.BoardService;
 import com.com.com.BoardVO.BoardRequest;
 import com.com.com.BoardVO.BoardResponse;
-import com.com.com.Search.SearchDTO;
+import com.com.com.Search.SearchVO;
 
 /**
  * Handles requests for the application home page.
@@ -27,11 +27,12 @@ public class HomeController {
 	public BoardService boardService;
 	
 //	전체 페이지 조회
-	@RequestMapping(value = "/", method = RequestMethod.GET)
-	public String home(@ModelAttribute("params") final SearchDTO params, Model model) {
-		System.out.println("넘어온 데이터" + params.toString());
+	@RequestMapping(value = "/")
+	public String home(@ModelAttribute("params") SearchVO params, Model model) {
+		System.out.println("컨트롤러로 넘어온 데이터" + params.toString());
 		List<BoardResponse> list = boardService.getList(params);
 		model.addAttribute("list", list);
+		model.addAttribute("params", params);
 		return "home";
 	}
 	

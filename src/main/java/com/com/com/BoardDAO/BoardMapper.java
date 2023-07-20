@@ -6,11 +6,11 @@ import java.util.Map;
 import com.com.com.BoardVO.BoardRequest;
 import com.com.com.BoardVO.BoardResponse;
 import com.com.com.Paging.Pagination;
-import com.com.com.Search.SearchDTO;
+import com.com.com.Search.SearchVO;
 
 public interface BoardMapper {
 
-	public List<BoardResponse> getList(SearchDTO params);
+	public List<BoardResponse> getList(SearchVO params);
 	
 	public List<Map<String, Object>> getListPaging(Pagination idx);
 	

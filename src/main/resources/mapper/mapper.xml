@@ -43,6 +43,10 @@
                 </otherwise>
             </choose>
         </if>
+        <!-- 날짜 검색이 있을 때 -->
+        <if test="startDate != null and startDate != ''">
+        	and to_char(reg_date, 'yyyy-MM-dd') between #{startDate} and #{endDate}
+        </if>
     </sql>
   
  	<select id="list" resultType="com.com.com.BoardVO.BoardResponse">

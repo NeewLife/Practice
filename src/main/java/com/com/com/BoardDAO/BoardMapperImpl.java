@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.com.com.BoardVO.BoardRequest;
 import com.com.com.BoardVO.BoardResponse;
 import com.com.com.Paging.Pagination;
-import com.com.com.Search.SearchDTO;
+import com.com.com.Search.SearchVO;
 
 
 @Repository("dao")
@@ -21,7 +21,7 @@ public class BoardMapperImpl implements BoardMapper{
 	public SqlSessionTemplate sqlSession;
 
 	@Override
-	public List<BoardResponse> getList(SearchDTO params) {
+	public List<BoardResponse> getList(SearchVO params) {
 		System.out.println("매퍼까지 넘어온 데이터" + params.toString());
 		return sqlSession.selectList("mapper.list", params);
 	}

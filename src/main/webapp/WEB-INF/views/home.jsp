@@ -3,22 +3,17 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page session="false" %>
 <html>
-<style>
-	table{
-	 	width: 1000px;    
-	 	margin-top : 20px;
-	}
-	tr, th, td{ border-style: double;}
-	th{	text-align: center;}
-</style>
 <head>
 	<title>Home</title>
+	<script src="https://code.jquery.com/jquery-3.7.0.js" integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
+	<script src="${path}/resources/js/home.js"></script>
+	<link href="${path}/resources/css/home.css" rel="stylesheet"/> 
 </head>
 <body>
 	<a href="/write">글쓰기</a>
 		
 	<div class="search_box">
-        <form id="searchForm" autocomplete="off">
+        <form id="searchForm" name="searchForm" autocomplete="off">
             <div class="sch_group fl">
                 <select id="searchType" name="searchType" title="검색 유형 선택">
                     <option value="title">제목</option>
@@ -28,6 +23,10 @@
                 </select>
                 <input type="text" id="keyword" name="keyword" placeholder="키워드를 입력해 주세요." title="키워드 입력" />
                 <button type="button" class="bt_search" onclick="movePage()"><span class="skip_info">검색</span></button>
+            </div>
+            <div>
+            	<input type="date" id="startDate" name="startDate" placeholder="시작날짜(20230720)"> ~
+            	<input type="date" id="endDate" name="endDate" placeholder="마지막날짜(20230720)">
             </div>
         </form>
     </div>
@@ -61,19 +60,4 @@
 		</c:forEach>
 	</table>
 </body>
-<script type="text/javascript">
-	function goViewPage(seq) {
-		location.href = '/post/view?seq=' + seq;
-	}
-	
-	function movePage(){
-		alert("movePage");
-		const form = document.getElementById('searchForm');
-        const queryParams = {
-              searchType: form.searchType.value
-            , keyword: form.keyword.value
-        }
-        location.href = location.pathname + '?' + new URLSearchParams(queryParams).toString();
-	}
-</script>
 </html>
