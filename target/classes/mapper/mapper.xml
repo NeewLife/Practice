@@ -15,6 +15,17 @@
   		<result column="UPT_DATE" property="uptDate"/>
   	</resultMap>
   	
+  	<sql id="board_study">
+  		SEQ AS seq
+  		,MEM_NAME AS memName
+  		,MEM_ID AS memId
+  		,BOARD_SUBJECT AS boardSubject
+  		,BOARD_CONTENT AS boardContent
+  		,VIEW_CNT AS viewCnt
+  		,REG_DATE AS regDate
+  		,UPT_DATE AS uptDate
+  	</sql>
+  	
   	<!-- 게시글 검색 -->
     <sql id="search">
         <!-- 검색 키워드가 있을 때 -->
@@ -50,34 +61,15 @@
     </sql>
   
  	<select id="list" resultType="com.com.com.BoardVO.BoardResponse">
-  		SELECT /*+ INDEX_DESC(board_study) */
-  			SEQ AS seq
-			,MEM_NAME AS memName
-			,MEM_ID AS memId
-			,BOARD_SUBJECT AS boardSubject
-			,BOARD_CONTENT AS boardContent
-			,TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS') AS regDate
-			,TO_CHAR(UPT_DATE, 'YYYY-MM-DD HH24:MI:SS') AS uptDate
-			,VIEW_CNT AS viewCnt
-			,USEYN
-		FROM board_study
-		WHERE 1=1 <include refid="search"/>
-  	</select>
-  	
-  	<select id="getListPaging"  resultType="com.com.com.BoardVO.BoardResponse">
-  		<![CDATA[
-  		select 
-  			SEQ
-			,MEM_NAME
-			,MEM_ID
-			,BOARD_SUBJECT
-			,BOARD_CONTENT
-			,REG_DATE
-			,UPT_DATE
-			,VIEW_CNT
-			,USEYN
-		from (select /*+ INDEX_DESC(board_study) */ board_study
-		]]>
+  		SELECT rn,
+  			<include refid="board_study"/>
+		FROM (
+			select 
+			row_number() over(order by SEQ desc) rn
+			, bs.*
+        	FROM board_study bs
+        	)
+		WHERE  rn BETWEEN (#{pageNum} - 1) * #{amount} + 1 AND #{pageNum} * #{amount} <include refid="search"/>
   	</select>
   	
   	<select id="view" resultType="com.com.com.BoardVO.BoardResponse">

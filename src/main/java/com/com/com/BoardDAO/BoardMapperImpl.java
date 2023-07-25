@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import com.com.com.BoardVO.BoardRequest;
 import com.com.com.BoardVO.BoardResponse;
-import com.com.com.Paging.Pagination;
+import com.com.com.Search.Pagination;
 import com.com.com.Search.SearchVO;
 
 

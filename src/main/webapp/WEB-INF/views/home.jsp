@@ -58,6 +58,17 @@
 				<td><c:out value="${list.viewCnt }"></c:out></td>
 			</tr>
 		</c:forEach>
+		
+		<tr>
+			<td colspan="7">
+				<a href="/?pageNum=${params.pagination.startPage}">처음</a>
+					<c:forEach var="pageNum" begin="1" end="10">
+						<a href="/?pageNum=${pageNum}"> ${pageNum}</a>
+					</c:forEach>
+				<a href="/?pageNum=${params.pagination.endPage}">맨 끝</a>
+			</td>
+		</tr>
 	</table>
+		
 </body>
 </html>

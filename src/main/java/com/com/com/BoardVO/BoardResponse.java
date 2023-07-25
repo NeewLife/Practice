@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class BoardResponse {
 //	DB로부터 받으려는 데이터 틀
+	private int rn;
 	private int seq;
 	private String memName;
 	private String memId;

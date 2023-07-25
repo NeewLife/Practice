@@ -29,8 +29,9 @@ public class HomeController {
 //	전체 페이지 조회
 	@RequestMapping(value = "/")
 	public String home(@ModelAttribute("params") SearchVO params, Model model) {
-		System.out.println("컨트롤러로 넘어온 데이터" + params.toString());
 		List<BoardResponse> list = boardService.getList(params);
+		System.out.println("params.toString() = " + params.toString());
+		System.out.println("list.toString() = " + list.toString());
 		model.addAttribute("list", list);
 		model.addAttribute("params", params);
 		return "home";

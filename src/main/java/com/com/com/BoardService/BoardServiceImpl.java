@@ -1,10 +1,6 @@
 package com.com.com.BoardService;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,17 +19,7 @@ public class BoardServiceImpl implements BoardService{
 	@Override
 	public List<BoardResponse> getList(SearchVO params){
 		System.out.println("서비스까지 넘어온 데이터" + params.toString());
-//		String startDate = params.getStartDate();
-//		String endDate = params.getEndDate();
-//		
-//		if (params.getStartDate() == "") {
-//			System.out.println("시작 날짜 비어있음");
-//			params.setStartDate();
-//		}
-//		if (params.getEndDate() == "") {
-//			System.out.println("끝 날짜 비어있음");
-//			params.setEndDate("99991231");
-//		}
+		System.out.println("params.getPageNum() = " + params.getPageNum());
 		return boardMapper.getList(params);
 	}
 
