@@ -72,6 +72,12 @@
 		WHERE  rn BETWEEN (#{pageNum} - 1) * #{amount} + 1 AND #{pageNum} * #{amount} <include refid="search"/>
   	</select>
   	
+  	<select id="count" resultType="int">
+  		SELECT 
+  			count(*) 
+		FROM board_study
+  	</select>
+  	
   	<select id="view" resultType="com.com.com.BoardVO.BoardResponse">
   		select
   			SEQ AS seq

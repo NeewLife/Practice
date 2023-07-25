@@ -27,6 +27,11 @@ public class BoardMapperImpl implements BoardMapper{
 	}
 
 	@Override
+	public int count() {
+		return sqlSession.selectOne("mapper.count");
+	}
+	
+	@Override
 	public void save(BoardRequest params) {
 		sqlSession.insert("save", params);
 	}

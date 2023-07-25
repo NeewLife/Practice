@@ -11,6 +11,8 @@ public interface BoardService {
 
 	public List<BoardResponse> getList(SearchVO params);
 	
+	public int count();
+	
 	public void save(BoardRequest params);
 	
 	public int update(BoardRequest params);

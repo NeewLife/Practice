@@ -12,6 +12,8 @@ public interface BoardMapper {
 
 	public List<BoardResponse> getList(SearchVO params);
 	
+	public int count();
+	
 	public List<Map<String, Object>> getListPaging(Pagination idx);
 	
 	public void save(BoardRequest params);

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.com.com.BoardService.BoardService;
 import com.com.com.BoardVO.BoardRequest;
 import com.com.com.BoardVO.BoardResponse;
+import com.com.com.Search.Pagination;
 import com.com.com.Search.SearchVO;
 
 /**
@@ -29,11 +30,14 @@ public class HomeController {
 //	전체 페이지 조회
 	@RequestMapping(value = "/")
 	public String home(@ModelAttribute("params") SearchVO params, Model model) {
+		Pagination pagination = new Pagination(boardService.count(), params);
 		List<BoardResponse> list = boardService.getList(params);
-		System.out.println("params.toString() = " + params.toString());
-		System.out.println("list.toString() = " + list.toString());
+		System.out.println(pagination);
+		System.out.println("이전페이지 존재여부 = " + pagination.isExistPrevPage());
+		System.out.println("다음페이지 존재여부 = " + pagination.isExistNextPage());
 		model.addAttribute("list", list);
 		model.addAttribute("params", params);
+		model.addAttribute("pagination", pagination);
 		return "home";
 	}
 	

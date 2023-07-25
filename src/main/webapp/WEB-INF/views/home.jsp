@@ -61,11 +61,13 @@
 		
 		<tr>
 			<td colspan="7">
-				<a href="/?pageNum=${params.pagination.startPage}">처음</a>
-					<c:forEach var="pageNum" begin="1" end="10">
+				<a href="/?pageNum=1">처음</a>
+					<c:if test="${pagination.isExistPrevPage()}"><a href="/?pageNum=${pagination.startPage - 1}">이전</a></c:if>
+					<c:forEach var="pageNum" begin="${pagination.startPage}" end="${pagination.endPage}">
 						<a href="/?pageNum=${pageNum}"> ${pageNum}</a>
 					</c:forEach>
-				<a href="/?pageNum=${params.pagination.endPage}">맨 끝</a>
+					<c:if test="${pagination.isExistNextPage()}"><a href="/?pageNum=${pagination.endPage + 1}">다음</a></c:if>
+				<a href="/?pageNum=${pagination.totalPageCount}">맨 끝</a>
 			</td>
 		</tr>
 	</table>

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.com.com.BoardDAO.BoardMapper;
 import com.com.com.BoardVO.BoardRequest;
 import com.com.com.BoardVO.BoardResponse;
+import com.com.com.Search.Pagination;
 import com.com.com.Search.SearchVO;
 
 @Service("boardService")
@@ -18,9 +19,13 @@ public class BoardServiceImpl implements BoardService{
 	
 	@Override
 	public List<BoardResponse> getList(SearchVO params){
-		System.out.println("서비스까지 넘어온 데이터" + params.toString());
-		System.out.println("params.getPageNum() = " + params.getPageNum());
+		Pagination pagination = new Pagination(boardMapper.count(), params);
 		return boardMapper.getList(params);
+	}
+	
+	@Override
+	public int count() {
+		return boardMapper.count();
 	}
 
 	@Override
