@@ -9,3 +9,22 @@ function movePage(){
 	form.submit();
 }
 
+$(document).ready(function() {
+	$("span").on("click", function(){
+	
+	
+	  	$.ajax({
+		    type: "post"
+		  , url: "page"
+		  , data: {
+		    	"pageNum" : 2	    	
+		    	}
+    	  , error: function() {
+		      console.log('통신실패!!');
+		    }
+	      , success: function(data) {
+		      console.log("통신데이터 값 : " + Object.entries(data));
+		    }
+	  	});
+  	});
+});

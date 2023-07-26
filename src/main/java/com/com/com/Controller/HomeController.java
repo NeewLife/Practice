@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.com.com.BoardService.BoardService;
 import com.com.com.BoardVO.BoardRequest;
@@ -32,13 +33,23 @@ public class HomeController {
 	public String home(@ModelAttribute("params") SearchVO params, Model model) {
 		Pagination pagination = new Pagination(boardService.count(), params);
 		List<BoardResponse> list = boardService.getList(params);
-		System.out.println(pagination);
-		System.out.println("이전페이지 존재여부 = " + pagination.isExistPrevPage());
-		System.out.println("다음페이지 존재여부 = " + pagination.isExistNextPage());
 		model.addAttribute("list", list);
 		model.addAttribute("params", params);
 		model.addAttribute("pagination", pagination);
 		return "home";
+	}
+	
+// Ajax로 비동기식 조회
+	@RequestMapping(value = "/page")
+	@ResponseBody
+	public List<BoardResponse> paging(@ModelAttribute("params") SearchVO params, Model model) {
+		System.out.println("넘어온 값 = " + params.getPageNum());
+		Pagination pagination = new Pagination(boardService.count(), params);
+		List<BoardResponse> list = boardService.getList(params);
+		model.addAttribute("list", list);
+		model.addAttribute("params", params);
+		model.addAttribute("pagination", pagination);
+		return list;
 	}
 	
 //	글쓰기 페이지
