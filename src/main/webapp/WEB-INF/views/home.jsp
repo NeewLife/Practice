@@ -11,28 +11,28 @@
 </head>
 <body>
 	<a href="/write">글쓰기</a>
-		
-	<div class="search_box">
-        <form id="searchForm" name="searchForm" autocomplete="off">
-            <div class="sch_group fl">
-                <select id="searchType" name="searchType" title="검색 유형 선택">
-                    <option value="title">제목</option>
-                    <option value="content">내용</option>
-                    <option value="">제목+내용</option>
-                    <option value="writer">작성자</option>
-                </select>
-                <input type="text" id="keyword" name="keyword" placeholder="키워드를 입력해 주세요." title="키워드 입력" />
-                <button type="button" class="bt_search"><span class="skip_info">검색</span></button>
-            </div>
-            <div>
-            	<input type="date" id="startDate" name="startDate" placeholder="시작날짜(20230720)"> ~
-            	<input type="date" id="endDate" name="endDate" placeholder="마지막날짜(20230720)">
-            </div>
-            <input type="hidden" id="pageNum" name="pageNum" value="1">
-            <input type="hidden" id="amount" name="amount" value="10">
-        </form>
-    </div>
-
+	
+		<div class="search_box">
+	        <form id="searchForm" name="searchForm" autocomplete="off">
+	            <div class="sch_group fl">
+	                <select id="searchType" name="searchType" title="검색 유형 선택">
+	                    <option value="title">제목</option>
+	                    <option value="content">내용</option>
+	                    <option value="">제목+내용</option>
+	                    <option value="writer">작성자</option>
+	                </select>
+	                <input type="text" id="keyword" name="keyword" placeholder="키워드를 입력해 주세요." title="키워드 입력" />
+	                <button type="button" class="bt_search"><span class="skip_info">검색</span></button>
+	            </div>
+	            <div>
+	            	<input type="date" id="startDate" name="startDate" placeholder="시작날짜(20230720)"> ~
+	            	<input type="date" id="endDate" name="endDate" placeholder="마지막날짜(20230720)">
+	            </div>
+	            <input type="hidden" id="pageNum" name="pageNum" value="1">
+	            <input type="hidden" id="amount" name="amount" value="10">
+	        </form>
+	    </div>
+	
 	<table>
 		<thead>
 			<tr>
