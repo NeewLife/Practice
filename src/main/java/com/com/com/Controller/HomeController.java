@@ -1,5 +1,6 @@
 package com.com.com.Controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -42,14 +43,19 @@ public class HomeController {
 // Ajax로 비동기식 조회
 	@RequestMapping(value = "/page")
 	@ResponseBody
-	public List<BoardResponse> paging(@ModelAttribute("params") SearchVO params, Model model) {
+	public Map<String, Object> paging(@ModelAttribute("params") SearchVO params) {
+		System.out.println("==================");
+		System.out.println("==================");
 		System.out.println("넘어온 값 = " + params.getPageNum());
 		Pagination pagination = new Pagination(boardService.count(), params);
 		List<BoardResponse> list = boardService.getList(params);
-		model.addAttribute("list", list);
-		model.addAttribute("params", params);
-		model.addAttribute("pagination", pagination);
-		return list;
+		System.out.println("list 목록" + list);
+		Map<String, Object> returnDataMap = new HashMap<String, Object>();
+		returnDataMap.put("list", list);
+		returnDataMap.put("params", params);
+		returnDataMap.put("pagination", pagination);
+		System.out.println("들어간 값" + returnDataMap);
+		return returnDataMap;
 	}
 	
 //	글쓰기 페이지

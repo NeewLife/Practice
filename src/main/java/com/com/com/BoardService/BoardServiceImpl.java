@@ -19,7 +19,6 @@ public class BoardServiceImpl implements BoardService{
 	
 	@Override
 	public List<BoardResponse> getList(SearchVO params){
-		Pagination pagination = new Pagination(boardMapper.count(), params);
 		return boardMapper.getList(params);
 	}
 	

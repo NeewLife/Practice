@@ -22,12 +22,14 @@
                     <option value="writer">작성자</option>
                 </select>
                 <input type="text" id="keyword" name="keyword" placeholder="키워드를 입력해 주세요." title="키워드 입력" />
-                <button type="button" class="bt_search" onclick="movePage()"><span class="skip_info">검색</span></button>
+                <button type="button" class="bt_search"><span class="skip_info">검색</span></button>
             </div>
             <div>
             	<input type="date" id="startDate" name="startDate" placeholder="시작날짜(20230720)"> ~
             	<input type="date" id="endDate" name="endDate" placeholder="마지막날짜(20230720)">
             </div>
+            <input type="hidden" id="pageNum" name="pageNum" value="1">
+            <input type="hidden" id="amount" name="amount" value="10">
         </form>
     </div>
 
@@ -43,31 +45,47 @@
 				<th>조회수</th>
 			</tr>
 		</thead>
-		<c:forEach items="${list}" var="list">
-			<tr>
-				<td><input type="checkbox"></td>
-				<td><c:out value="${list.seq}"></c:out></td>
-				<td><c:out value="${list.memName}"></c:out></td>
-				<td>
-					<a href="javascript:void(0);" onclick="goViewPage(${list.seq})">
-						<c:out value="${list.boardSubject}"></c:out>
-					</a>
-				</td>
-				<td><c:out value="${list.regDate }"></c:out></td>
-				<td><c:out value="${list.uptDate }"></c:out></td>
-				<td><c:out value="${list.viewCnt }"></c:out></td>
-			</tr>
-		</c:forEach>
+		<tbody id="list">
+			<c:forEach items="${list}" var="list">
+				<tr>
+					<td><input type="checkbox"></td>
+					<td><c:out value="${list.seq}"></c:out></td>
+					<td><c:out value="${list.memName}"></c:out></td>
+					<td>
+						<a href="javascript:void(0);" onclick="goViewPage(${list.seq})">
+							<c:out value="${list.boardSubject}"></c:out>
+						</a>
+					</td>
+					<td><c:out value="${list.regDate }"></c:out></td>
+					<td><c:out value="${list.uptDate }"></c:out></td>
+					<td><c:out value="${list.viewCnt }"></c:out></td>
+				</tr>
+			</c:forEach>
+		</tbody>
 		
 		<tr>
 			<td colspan="7">
-				<span id="firstPage" value="1">처음</a>
-					<c:if test="${pagination.isExistPrevPage()}"><span value="${pagination.startPage - 1}">이전</span></c:if>
-					<c:forEach var="pageNum" begin="${pagination.startPage}" end="${pagination.endPage}">
-						<span id="${pageNum}" value="${pageNum}">${pageNum}</span>
-					</c:forEach>
-					<c:if test="${pagination.isExistNextPage()}"><span value="${pagination.endPage + 1}">다음</span></c:if>
-				<span id="lastPage" value="${pagination.totalPageCount}">맨 끝</span>
+				<a href="javascript:goPage(1)" id="firstPage">
+					처음
+				</a>
+				<c:if test="${pagination.isExistPrevPage()}">
+				<a href="javascript:goPage(${pagination.startPage - 1})">
+					이전
+				</a>
+				</c:if>
+				<c:forEach var="pageNum" begin="${pagination.startPage}" end="${pagination.endPage}">
+					<a href="javascript:goPage(${pageNum})">
+						${pageNum}
+					</a>
+				</c:forEach>
+				<c:if test="${pagination.isExistNextPage()}">
+				<a href="javascript:goPage(${pagination.endPage + 1})">
+					다음
+				</a>
+				</c:if>
+				<a href="javascript:goPage(${pagination.totalPageCount})">
+					맨 끝
+				</a>
 			</td>
 		</tr>
 	</table>

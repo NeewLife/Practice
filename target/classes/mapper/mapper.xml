@@ -68,8 +68,9 @@
 			row_number() over(order by SEQ desc) rn
 			, bs.*
         	FROM board_study bs
+        	WHERE 1=1 <include refid="search"/>
         	)
-		WHERE  rn BETWEEN (#{pageNum} - 1) * #{amount} + 1 AND #{pageNum} * #{amount} <include refid="search"/>
+		WHERE  rn BETWEEN (#{pageNum} - 1) * #{amount} + 1 AND #{pageNum} * #{amount} 
   	</select>
   	
   	<select id="count" resultType="int">
