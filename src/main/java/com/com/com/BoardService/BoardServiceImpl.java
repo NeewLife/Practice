@@ -1,6 +1,7 @@
 package com.com.com.BoardService;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,8 +24,18 @@ public class BoardServiceImpl implements BoardService{
 	}
 	
 	@Override
+	public List<Map<String, Object>> getListTest(Map<String, Object> params){
+		return boardMapper.getListTest(params);
+	}
+	
+	@Override
 	public int count() {
 		return boardMapper.count();
+	}
+	
+	@Override
+	public int nextSeq() {
+		return boardMapper.nextSeq();
 	}
 
 	@Override

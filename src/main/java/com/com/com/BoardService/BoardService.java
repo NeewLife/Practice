@@ -11,7 +11,11 @@ public interface BoardService {
 
 	public List<BoardResponse> getList(SearchVO params);
 	
+	public List<Map<String, Object>> getListTest(Map<String, Object> params);
+	
 	public int count();
+	
+	public int nextSeq();
 	
 	public void save(BoardRequest params);
 	

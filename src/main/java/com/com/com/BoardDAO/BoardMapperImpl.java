@@ -25,10 +25,21 @@ public class BoardMapperImpl implements BoardMapper{
 		System.out.println("매퍼까지 넘어온 데이터" + params.toString());
 		return sqlSession.selectList("mapper.list", params);
 	}
+	
+	@Override
+	public List<Map<String, Object>> getListTest(Map<String, Object> params){
+		System.out.println("params = " + params);
+		return sqlSession.selectList("mapper.listTest", params);
+	}
 
 	@Override
 	public int count() {
 		return sqlSession.selectOne("mapper.count");
+	}
+	
+	@Override
+	public int nextSeq() {
+		return sqlSession.selectOne("mapper.nextSeq");
 	}
 	
 	@Override

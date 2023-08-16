@@ -30,7 +30,10 @@
 				<input type="hidden" id="viewCnt" name="viewCnt" value='<c:out value="${params.viewCnt }"></c:out>'>
 				<input type="hidden" id="useYn" name="useYn" value='<c:out value="${params.useYn }"></c:out>'>
 			</fieldset>
+			<div class="imgView">
 			
+			</div>
+<!-- 			<img alt="image" src="/post/showImage?fileName=12311.JPG"> -->
 			<div id="button">
 				<button type="button" onclick="updatePost()" id="updateBtn">수정하기</button>
 				<button type="button" id="deleteBtn">삭제하기</button>
@@ -50,6 +53,16 @@
 	    alert('게시글이 수정되었습니다');
 	}
 	
+	var html = `
+			<c:forEach var="file" items="${files}" varStatus="f">
+				<div id="fileImg${f.count}">
+					<img alt="image" src="/post/showImage?fileName=${file.saveName}&filePath=${file.savePath}">
+					<a href="/download?fileName=${file.saveName}&filePath=${file.savePath}">다운로드</a>
+				</div>
+			</c:forEach>
+			`
+	$(".imgView").html(html);
+	
 	$(document).ready(function () {
 		$('#deleteBtn').on("click", function (){
 			if ( !confirm('정말로 게시글을 삭제할까요?') ) {
@@ -59,6 +72,8 @@
 			form.submit();
 			alert('게시글을 삭제하였습니다');
 		});
+		
+		
 	});
 		
 </script>

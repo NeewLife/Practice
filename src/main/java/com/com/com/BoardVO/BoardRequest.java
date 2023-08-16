@@ -1,6 +1,8 @@
 package com.com.com.BoardVO;
 
 
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.Data;
 
 @Data

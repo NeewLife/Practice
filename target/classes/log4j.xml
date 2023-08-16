@@ -32,7 +32,6 @@
 		<level value="info" />
 	</logger>
 	
-	
 	<!-- SQL Logger -->
 
 	<logger name="jdbc.sqltiming" additivity="false">
@@ -54,7 +53,6 @@
 		<level value="warn" />
 		<appender-ref ref="console"/> 
 	</logger>
-	
 
 	<!-- Root Logger -->
 	<root>

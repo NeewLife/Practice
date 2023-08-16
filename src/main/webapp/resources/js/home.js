@@ -25,7 +25,7 @@ $(document).ready(function() {
 	      		let html = "";
 				
 				listElement.empty();
-	      		listElement.html(html);
+	      		listElement.html(data);
 	      		
 	      		
 	        }

@@ -60,6 +60,25 @@
         </if>
     </sql>
   
+  	<!-- 여기부터 결재시스템 쿼리문 -->
+ 	<select id="login" resultType="com.com.com.Authorization.VO.MemberVO">
+  		SELECT ID AS id
+  			 , USER_ID AS userId
+  			 , USER_PW AS userPw
+  			 , USER_NAME AS userName
+  			 , USER_RANK AS userRank
+		FROM sy_member
+		WHERE 
+			USER_ID = #{loginId}
+  	</select>
+  	
+  	<select id="getList">
+  		SELECT 
+  	</select>
+  
+  
+  	<!-- 여기부터 Board 게시판 쿼리문 -->
+  
  	<select id="list" resultType="com.com.com.BoardVO.BoardResponse">
   		SELECT rn,
   			<include refid="board_study"/>
@@ -71,6 +90,14 @@
         	WHERE 1=1 <include refid="search"/>
         	)
 		WHERE  rn BETWEEN (#{pageNum} - 1) * #{amount} + 1 AND #{pageNum} * #{amount} 
+  	</select>
+  	
+  	<select id="listTest" resultMap="rsList">
+  		SELECT 
+  		row_number() over(order by SEQ desc) rn
+  		, bs.* 
+  		FROM board_study bs
+  		WHERE 1=1 <include refid="search"/>
   	</select>
   	
   	<select id="count" resultType="int">
@@ -95,6 +122,22 @@
 			SEQ = #{seq}
   	</select>
   	
+  	<select id="fileView" resultType="com.com.com.FileVO.FileResponse">
+  		SELECT
+  			FILE_SEQ AS fileSeq
+  			,REAL_NAME AS fileName
+  			,SAVE_NAME AS saveName
+  			,REG_DATE AS regDate
+  			,SAVE_PATH AS savePath
+  			,LIST_SEQ AS listSeq
+		FROM file_study_table
+		WHERE LIST_SEQ = #{seq}
+  	</select>
+  	
+  	<select id="nextSeq" resultType="int">
+  		SELECT (NVL(MAX(seq),0)+1) AS seq FROM board_study
+  	</select>
+  	
   	<insert id="save">
   		insert INTO board_study(
   			SEQ
@@ -108,7 +151,7 @@
 			,USEYN
 		)
 		values(
-			(SELECT NVL(MAX(seq),0) FROM board_study) + 1
+			#{seq}
 			,#{memName}
 			,#{memId}
 			,#{boardSubject}
@@ -117,6 +160,25 @@
 			,null
 			,0
 			,null
+		)
+  	</insert>
+  	
+  	<insert id="fileSave">
+  		insert INTO FILE_STUDY_TABLE(
+  			FILE_SEQ
+  			,REAL_NAME
+			,SAVE_NAME
+			,REG_DATE
+			,SAVE_PATH
+			,LIST_SEQ
+		)
+		values(
+  			(SELECT (NVL(MAX(FILE_SEQ),0)+1) FROM FILE_STUDY_TABLE)
+  			,#{fileName}
+			,#{saveName}
+			,sysdate
+			,#{savePath}
+			,#{listSeq}
 		)
   	</insert>
   	
