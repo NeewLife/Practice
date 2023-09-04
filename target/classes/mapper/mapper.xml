@@ -4,64 +4,109 @@
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
   
   <mapper namespace="mapper">
-  	<resultMap type="map" id="rsList">
-  		<result column="SEQ" property="seq"/>
-  		<result column="MEM_NAME" property="memName"/>
-  		<result column="MEM_ID" property="memId"/>
-  		<result column="BOARD_SUBJECT" property="boardSubject"/>
-  		<result column="BOARD_CONTENT" property="boardContent"/>
-  		<result column="VIEW_CNT" property="viewCnt"/>
-  		<result column="REG_DATE" property="regDate"/>
-  		<result column="UPT_DATE" property="uptDate"/>
-  	</resultMap>
   	
-  	<sql id="board_study">
-  		SEQ AS seq
-  		,MEM_NAME AS memName
-  		,MEM_ID AS memId
-  		,BOARD_SUBJECT AS boardSubject
-  		,BOARD_CONTENT AS boardContent
-  		,VIEW_CNT AS viewCnt
-  		,REG_DATE AS regDate
-  		,UPT_DATE AS uptDate
+  	<sql id="board">
+  		POST_ID AS postId
+  		,TITLE AS title
+  		,WRITER_PK_NUM AS writerPkNum
+  		,WRITER AS writer
+  		,WRITE_DATE AS writeDate
+  		,CONTENT AS content
+  		,CONFIRM_DATE AS confirmDate
+  		,CONFIRM_PERSON AS confirmPerson
+  		,CONFIRM_STATUS AS confirmStatus
   	</sql>
+  	
+  	<resultMap type="map" id="history">
+  		<result column="POST_ID" property="POST_ID"/>
+        <result column="SEQ" property="seq"/>
+        <result column="CONFIRM_DATE" property="confirmDate"/>
+        <result column="CONFIRM_PERSON" property="confirmPerson"/>
+        <result column="CONFIRM_STATUS" property="confirmStatus"/>
+  	</resultMap>
   	
   	<!-- 게시글 검색 -->
     <sql id="search">
         <!-- 검색 키워드가 있을 때 -->
         <if test="keyword != null and keyword != ''">
             <choose>
-<!--                 검색 유형이 있을 때 -->
+                <!-- 검색 유형이 있을 때 -->
                 <when test="searchType != null and searchType != ''">
                     <choose>
-                        <when test="'title'.equals( searchType )">
-                            AND BOARD_SUBJECT LIKE '%'||#{keyword}||'%'
-                        </when>
-                        <when test="'content'.equals( searchType )">
-                            AND BOARD_CONTENT LIKE '%'||#{keyword}||'%'
-                        </when>
                         <when test="'writer'.equals( searchType )">
-                            AND MEM_NAME LIKE '%'||#{keyword}||'%'
+                            AND WRITER LIKE '%'||#{keyword}||'%'
+                        </when>
+                        <when test="'authPeople'.equals( searchType )">
+                            AND CONFIRM_PERSON LIKE '%'||#{keyword}||'%'
+                        </when>
+                        <when test="'titleContent'.equals( searchType )">
+                            AND (
+			                    TITLE LIKE '%'||#{keyword}||'%'
+			                    OR CONTENT LIKE '%'||#{keyword}||'%'
+		                    )
                         </when>
                     </choose>
                 </when>
-<!--                 전체 검색일 때 때 -->
-                <otherwise>
-                    AND (
-                    BOARD_SUBJECT LIKE '%'||#{keyword}||'%'
-                    OR BOARD_CONTENT LIKE '%'||#{keyword}||'%'
-                    )
-                </otherwise>
             </choose>
         </if>
+		<if test="authType != null and authType != ''">
+			<choose>
+				<when test="authType == 1">
+					AND CONFIRM_STATUS LIKE '1'
+				</when>
+				<when test="authType == 2">
+					AND CONFIRM_STATUS LIKE '2'
+				</when>
+				<when test="authType == 3">
+					AND CONFIRM_STATUS LIKE '3'
+				</when>
+				<when test="authType == 4">
+					AND CONFIRM_STATUS LIKE '4'
+				</when>
+				<when test="authType == 5">
+					AND CONFIRM_STATUS LIKE '5'
+				</when>
+			</choose>
+		</if>        
         <!-- 날짜 검색이 있을 때 -->
         <if test="startDate != null and startDate != ''">
-        	and to_char(reg_date, 'yyyy-MM-dd') between #{startDate} and #{endDate}
+        	and to_char(write_date, 'yyyy-MM-dd') between #{startDate} and #{endDate}
         </if>
     </sql>
-  
+    
+    <sql id="rankValidation">
+    	<!-- 부장이면 전부다 보게 -->
+    	<if test="userRank != '부장'">
+    		<choose>
+    			<!-- 일반 사원일 때 -->
+    			<when test="userRank != '과장'">		
+	    			AND WRITER_PK_NUM = #{id}
+	    		</when>
+ 	    		<!-- 과장일 때 결재대기 or 반려된 것중 결재자가 본인이거나 없는 경우 -->
+	    		<otherwise>
+	    			AND (
+	    			  (CONFIRM_STATUS = 2 OR CONFIRM_STATUS = 3 OR CONFIRM_STATUS = 5) AND (CONFIRM_PERSON = #{userName} OR CONFIRM_PERSON IS NULL)
+	    			) 
+	    			OR WRITER_PK_NUM = #{id}
+	    		</otherwise>
+    		</choose>
+    	</if>
+    </sql>
+
+	<select id="isUser" resultType="int">
+		SELECT COUNT(*)
+		FROM SY_MEMBER
+		WHERE USER_ID = #{loginId}
+	</select>
   	<!-- 여기부터 결재시스템 쿼리문 -->
- 	<select id="login" resultType="com.com.com.Authorization.VO.MemberVO">
+ 	<select id="login" resultType="int">
+  		SELECT ID AS id
+		FROM sy_member
+		WHERE 
+			USER_ID = #{loginId}
+  	</select>
+  	
+  	<select id="user" resultType="com.com.com.Authorization.VO.MemberVO">
   		SELECT ID AS id
   			 , USER_ID AS userId
   			 , USER_PW AS userPw
@@ -69,136 +114,114 @@
   			 , USER_RANK AS userRank
 		FROM sy_member
 		WHERE 
-			USER_ID = #{loginId}
+			ID = #{id}
   	</select>
   	
-  	<select id="getList">
+  	<select id="list" resultType="com.com.com.Authorization.VO.BoardResponse">
   		SELECT 
+  			<include refid="board" />
+		FROM SY_BOARD
+		WHERE 1=1 
+			<include refid="rankValidation" />
+			<include refid="search" />
+		ORDER BY POST_ID
   	</select>
-  
-  
-  	<!-- 여기부터 Board 게시판 쿼리문 -->
-  
- 	<select id="list" resultType="com.com.com.BoardVO.BoardResponse">
-  		SELECT rn,
-  			<include refid="board_study"/>
+  	
+  	<select id="view" resultType="com.com.com.Authorization.VO.BoardResponse">
+  		SELECT 
+  			<include refid="board" />
+		FROM SY_BOARD
+		WHERE POST_ID = #{postId}
+  	</select>
+  	
+  	<select id="history" resultMap="history">
+  		SELECT *
 		FROM (
-			select 
-			row_number() over(order by SEQ desc) rn
-			, bs.*
-        	FROM board_study bs
-        	WHERE 1=1 <include refid="search"/>
-        	)
-		WHERE  rn BETWEEN (#{pageNum} - 1) * #{amount} + 1 AND #{pageNum} * #{amount} 
+		    SELECT *
+		    FROM SY_HISTORY
+		    ORDER BY seq
+		) 
+		WHERE POST_ID = #{postId}
   	</select>
   	
-  	<select id="listTest" resultMap="rsList">
-  		SELECT 
-  		row_number() over(order by SEQ desc) rn
-  		, bs.* 
-  		FROM board_study bs
-  		WHERE 1=1 <include refid="search"/>
-  	</select>
-  	
-  	<select id="count" resultType="int">
-  		SELECT 
-  			count(*) 
-		FROM board_study
-  	</select>
-  	
-  	<select id="view" resultType="com.com.com.BoardVO.BoardResponse">
-  		select
-  			SEQ AS seq
-			,MEM_NAME AS memName
-			,MEM_ID AS memId
-			,BOARD_SUBJECT AS boardSubject
-			,BOARD_CONTENT AS boardContent
-			,TO_CHAR(REG_DATE, 'YYYY-MM-DD HH24:MI:SS') AS regDate
-			,TO_CHAR(UPT_DATE, 'YYYY-MM-DD HH24:MI:SS') AS uptDate
-			,VIEW_CNT AS viewCnt
-			,USEYN
-		from board_study
-		where 
-			SEQ = #{seq}
-  	</select>
-  	
-  	<select id="fileView" resultType="com.com.com.FileVO.FileResponse">
-  		SELECT
-  			FILE_SEQ AS fileSeq
-  			,REAL_NAME AS fileName
-  			,SAVE_NAME AS saveName
-  			,REG_DATE AS regDate
-  			,SAVE_PATH AS savePath
-  			,LIST_SEQ AS listSeq
-		FROM file_study_table
-		WHERE LIST_SEQ = #{seq}
-  	</select>
-  	
-  	<select id="nextSeq" resultType="int">
-  		SELECT (NVL(MAX(seq),0)+1) AS seq FROM board_study
+  	<select id="lastSeq" resultType="int">
+  		SELECT NVL(MAX(POST_ID), 0) + 1 AS postId
+  		FROM SY_BOARD
   	</select>
   	
   	<insert id="save">
-  		insert INTO board_study(
-  			SEQ
-  			,MEM_NAME
-			,MEM_ID
-			,BOARD_SUBJECT
-			,BOARD_CONTENT
-			,REG_DATE
-			,UPT_DATE
-			,VIEW_CNT
-			,USEYN
-		)
-		values(
-			#{seq}
-			,#{memName}
-			,#{memId}
-			,#{boardSubject}
-			,#{boardContent}
-			,sysdate
-			,null
-			,0
-			,null
-		)
+  		INSERT INTO SY_BOARD (
+			POST_ID
+			, TITLE
+			, WRITER_PK_NUM
+			, WRITER
+			, WRITE_DATE
+			, CONTENT
+			, CONFIRM_DATE
+			, CONFIRM_PERSON
+			, CONFIRM_STATUS
+  		)
+  		VALUES (
+			#{postId}
+			, #{title}
+			, #{writerPkNum}
+			, #{writer}
+			, sysdate
+			, #{content}
+			, NULL
+			, NULL
+			, #{confirmStatus}
+  		)
   	</insert>
   	
-  	<insert id="fileSave">
-  		insert INTO FILE_STUDY_TABLE(
-  			FILE_SEQ
-  			,REAL_NAME
-			,SAVE_NAME
-			,REG_DATE
-			,SAVE_PATH
-			,LIST_SEQ
-		)
-		values(
-  			(SELECT (NVL(MAX(FILE_SEQ),0)+1) FROM FILE_STUDY_TABLE)
-  			,#{fileName}
-			,#{saveName}
-			,sysdate
-			,#{savePath}
-			,#{listSeq}
-		)
+  	<insert id="creHistory">
+  		INSERT INTO SY_HISTORY(
+  			POST_ID
+  			, SEQ
+  			, CONFIRM_DATE
+  			, CONFIRM_PERSON
+  			, CONFIRM_STATUS
+  		)
+  		VALUES (
+  			#{postId}
+  			, (
+  				SELECT NVL(MAX(SEQ), 0) 
+  				FROM SY_HISTORY 
+  				WHERE POST_ID = #{postId}
+ 			  ) + 1
+  			, sysdate
+  			, #{confirmPerson, jdbcType=VARCHAR}
+  			, #{confirmStatus}
+  		)
   	</insert>
   	
   	<update id="update">
-  		UPDATE board_study
+  		UPDATE SY_BOARD
   		SET
-  			SEQ = #{seq}
-  			,MEM_NAME = #{memName}
-			,MEM_ID = #{memId}
-			,BOARD_SUBJECT = #{boardSubject}
-			,BOARD_CONTENT = #{boardContent}
-			,UPT_DATE = sysdate
-		WHERE
-			SEQ = #{seq}
+  			WRITE_DATE = sysdate
+  			, TITLE = #{title}
+  			, CONTENT = #{content}
+  			, CONFIRM_STATUS = #{confirmStatus}
+  			, CONFIRM_PERSON = ''
+		WHERE POST_ID = #{postId}
   	</update>
   	
-  	<delete id="delete">
-  		DELETE FROM board_study
-  		WHERE
-  			SEQ = #{seq}
-  	</delete>
+  	<update id="reject">
+  		UPDATE SY_BOARD
+  		SET
+  			CONFIRM_DATE = sysdate
+  			, CONFIRM_PERSON = #{confirmPerson}
+  			, CONFIRM_STATUS = '5'
+		WHERE POST_ID = #{postId}
+  	</update>
   	
+  	<update id="confirm">
+  		UPDATE SY_BOARD
+  		SET
+  			CONFIRM_DATE = sysdate
+  			, CONFIRM_PERSON = #{confirmPerson}
+  			, CONFIRM_STATUS = #{confirmStatus}
+		WHERE POST_ID = #{postId}
+  	</update>
+  
   </mapper>

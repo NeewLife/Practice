@@ -11,7 +11,7 @@ body {
   background: linear-gradient(90deg, #C7C5F4, #776BCC);   
 }
 
-a{ text-decoration: none; color: black;}
+label{padding: 8px;}
 
 .container {
   display: flex;
@@ -30,21 +30,23 @@ a{ text-decoration: none; color: black;}
 	border-radius: 10px;
 }
 
-header{ 
-	text-align: center;
-	padding-bottom: 30px; 
+.chkBoxTable{
+	width: 50%;
+	display:grid;
+	place-items: center;
+	margin: auto;
 }
 
-.writeBtn{ 
-	position: relative;
-    float: right;
-    right: 15%;
+.formBox{
+	display:grid;
+	place-items: center;
+	padding-top: 20px;
+	padding-bottom: 30px;
 }
 
-.authorizeBtn{ float: right; }
-
-#search{
-	margin: 10px;
-	padding: 5px 10px;
-	border: solid 0.5px;
+fieldset>div{
+	display: inline-block;
+	width: 60px;
 }
+
+#submitButton{text-align: center;}

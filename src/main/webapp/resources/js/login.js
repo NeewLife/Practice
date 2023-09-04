@@ -2,10 +2,6 @@ function login(data){
 	let html = "";
 	html +=     `
 				<input type="hidden" id="id" name="id" value="${data.id}">
-				<input type="hidden" id="userId" name="userId" value="${data.userId}">
-				<input type="hidden" id="userPw" name="userPw" value="${data.userPw}">
-				<input type="hidden" id="userName" name="userName" value="${data.userName}">
-				<input type="hidden" id="userRank" name="userRank" value="${data.userRank}">
 			    `
     let form = document.getElementById("loginData");
     form.innerHTML = html;
@@ -14,8 +10,7 @@ function login(data){
 
 $(document).ready(function(){
 	
-	$("#submit").on("click", function(){
-		
+	$("button").on("click", function(){
 		if($("#loginId").val() == ""){
 			alert("아이디를 입력하세요");
 			return 0;
@@ -48,5 +43,6 @@ $(document).ready(function(){
 				alert(textStatus); //"error"로 고정인듯함
 			}
 		});
+		
 	});
 });

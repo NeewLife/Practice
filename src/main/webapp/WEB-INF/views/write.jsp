@@ -6,33 +6,66 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Insert title here</title>
-	<script src="https://code.jquery.com/jquery-3.7.0.js" integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link href="${path}/resources/css/write.css" rel="stylesheet">
+	<script src="https://code.jquery.com/jquery-3.7.0.js" ></script>
 	<script src="${path}/resources/js/write.js"></script>
 </head>
 <body>
-	<a href="/">목록으로</a>
-
-	<form action="/post/save" method="post" id="saveForm" name="saveForm" enctype="multipart/form-data">
-		<fieldset>
-			작성자 : 
-			<input type="text" id="memName" name="memName">
-			<br>
-			ID : 
-			<input type="text" id="memId" name="memId">
-			<br>
-			제목 : 
-			<input type="text" id="boardSubject" name="boardSubject">
-			<br>
-			내용 : 
-			<br>
-			<textarea placeholder="내용" id="boardContent" name="boardContent"></textarea>
-		</fieldset>
-		<div class="fileUpload">
-			<button type="button" id="addFileInput">파일 추가</button>
+	<div class="container">
+		<div class="screen">
+	
+			<a href="/post">목록으로</a>
+		
+			<div class="chkBoxTable">
+				<table class="table">
+					<thead>
+						<tr>
+							<th>결재요청</th>
+							<th>과장</th>
+							<th>부장</th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+			</div>
+			
+			<div class="formBox">
+				<c:if test="${post == null }">
+					<form action="/save" method="post">
+				</c:if>
+				<c:if test="${post != null }">
+					<form action="/update" method="post">
+				</c:if>
+					<fieldset>
+						<label for="seq">번호 : </label>
+						<c:choose>
+							<c:when test="${post != null }">
+								<input type="text" id="postId" name="postId" value="${post.postId }" readonly="readonly">
+								<br>
+							</c:when>
+							<c:otherwise>
+								<input type="text" id="postId" name="postId" value="${lastSeq }" readonly="readonly">
+								<br>
+							</c:otherwise>
+						</c:choose>
+						<label for="writer">작성자 : </label>
+						<input type="text" id="writer" name="writer" value="${sessionScope.session.userName }" readonly="readonly">
+						<br>
+						<label for="title">제목 :</label>
+						<input type="text" id="title" name="title" value="${post.title }">
+						<br>
+						<label for="content">내용 : </label>
+						<textarea placeholder="내용" id="content" name="content" >${post.content }</textarea>
+					</fieldset>
+				</form>
+				<div id="submitButton">
+					<button type="button" onclick="temporary()" class="btn btn-secondary">임시저장</button>
+					<button type="button" onclick="request()" class="btn btn-primary">결재요청</button>
+				</div>
+			</div>
 		</div>
-		<div id="submitButton">
-			<button type="submit">등록</button>
-		</div>
-	</form>
+	</div>
 </body>
 </html>
