@@ -202,6 +202,7 @@
   			, TITLE = #{title}
   			, CONTENT = #{content}
   			, CONFIRM_STATUS = #{confirmStatus}
+  			, CONFIRM_DATE = ''
   			, CONFIRM_PERSON = ''
 		WHERE POST_ID = #{postId}
   	</update>

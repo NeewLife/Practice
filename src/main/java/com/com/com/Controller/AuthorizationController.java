@@ -43,7 +43,7 @@ public class AuthorizationController {
 		System.out.println("login 페이지 실행");
 		return "login";
 	}
-	
+	 
 	@RequestMapping(value = "/login", produces = "application/json; charset=utf8")
 	@ResponseBody
 	public HashMap<String, Object> login(@RequestParam String loginId,
@@ -122,6 +122,9 @@ public class AuthorizationController {
 					   , SearchVO searchVO) {
 		HttpSession session = request.getSession();
 		MemberVO sessionData = (MemberVO) session.getAttribute("memberVO");
+		if(sessionData == null) {
+			return null;
+		}
 		int id = sessionData.getId();
 		System.out.println("세션으로 넘어온 데이터 = " + id);
 		MemberVO memberVO = authorizationService.user(id);
@@ -138,7 +141,7 @@ public class AuthorizationController {
 		params.put("startDate", searchVO.getStartDate());
 		params.put("endDate", searchVO.getEndDate());
 		System.out.println("params 값 = " + params);
-		
+		 
 		List<BoardResponse> list = authorizationService.list(params);
 		System.out.println("==================================");
 		return list;
@@ -151,8 +154,9 @@ public class AuthorizationController {
 						, required = false, defaultValue = "0") int postId
 						, HttpServletRequest request, Model model) {
 		HttpSession session = request.getSession();
-		if(session == null) {
-			return "/";
+		MemberVO sessionData = (MemberVO) session.getAttribute("memberVO");
+		if(sessionData == null) {
+			return "redirect:/";
 		}
 		System.out.println("== /write 로 넘어온 postId = " + postId);
 		int lastSeq = authorizationService.lastSeq();
@@ -169,10 +173,10 @@ public class AuthorizationController {
 	@RequestMapping(value = "/save")
 	public String save(BoardRequest boardRequest, HttpServletRequest request) {
 		HttpSession session = request.getSession();
-		if(session == null) {
-			return "/";
-		}
 		MemberVO sessionData = (MemberVO) session.getAttribute("memberVO");
+		if(sessionData == null) {
+			return "redirect:/";
+		}
 		int writerPkNum = sessionData.getId();
 		boardRequest.setWriterPkNum(writerPkNum);
 		authorizationService.save(boardRequest);
@@ -182,10 +186,10 @@ public class AuthorizationController {
 	@RequestMapping(value = "/update")
 	public String update(BoardRequest boardRequest, HttpServletRequest request) {
 		HttpSession session = request.getSession();
-		if(session == null) {
-			return "/";
-		}
 		MemberVO sessionData = (MemberVO) session.getAttribute("memberVO");
+		if(sessionData == null) {
+			return "redirect:/";
+		}
 		int writerPkNum = sessionData.getId();
 		boardRequest.setWriterPkNum(writerPkNum);
 		authorizationService.update(boardRequest);
@@ -196,10 +200,10 @@ public class AuthorizationController {
 	@RequestMapping(value = "/reject")
 	public String reject(@RequestParam int postId, HttpServletRequest request) {
 		HttpSession session = request.getSession();
-		if(session == null) {
-			return "/";
-		}
 		MemberVO sessionData = (MemberVO) session.getAttribute("memberVO");
+		if(sessionData == null) {
+			return "redirect:/";
+		}
 		String userName = sessionData.getUserName();
 		Map<String, Object> params = new HashMap<String, Object>();
 		SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -218,10 +222,10 @@ public class AuthorizationController {
 	@RequestMapping(value = "/confirm")
 	public String confirm(@RequestParam int postId, HttpServletRequest request) {
 		HttpSession session = request.getSession();
-		if(session == null) {
-			return "/";
-		}
 		MemberVO sessionData = (MemberVO) session.getAttribute("memberVO");
+		if(sessionData == null) {
+			return "redirect:/";
+		}
 		String userRank = sessionData.getUserRank();
 		String userName = sessionData.getUserName();
 		Map<String, Object> params = new HashMap<String, Object>();
@@ -252,12 +256,12 @@ public class AuthorizationController {
 	@RequestMapping(value = "/view")
 	public String view(@RequestParam int postId, HttpServletRequest request, Model model) {
 		HttpSession session = request.getSession();
-		if(session == null) {
-			return "/";
-		}
 		System.out.println("view 에서 session = " + session.getAttribute("session"));
 		System.out.println("넘어온 postId = " + postId);
 		MemberVO sessionData = (MemberVO) session.getAttribute("memberVO");
+		if(sessionData == null) {
+			return "redirect:/";
+		}
 		int id = sessionData.getId();
 		BoardResponse post = authorizationService.view(postId);
 		if(post.getConfirmStatus() == 1 && post.getWriterPkNum() == id) {
@@ -271,3 +275,4 @@ public class AuthorizationController {
 		return "view";
 	}
 }
+ 

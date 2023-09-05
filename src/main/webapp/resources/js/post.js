@@ -1,5 +1,9 @@
 $(document).ready(function(){
 
+	$("#searchBtn").on("click", function(){
+		("#search").submit();
+	});
+
 	$("#search").on("change", function(){
 	
 		let searchType = $("#searchType").val();
@@ -13,6 +17,7 @@ $(document).ready(function(){
 		$.ajax({
 	        type: 'post', 
 	        url: "/search", 
+	        dataType: "JSON",
 	        data: {"searchType":searchType
 	        	 , "keyword":keyword
 	        	 , "authType":authType
@@ -23,6 +28,7 @@ $(document).ready(function(){
 	        	$("#posts").empty();
 	        	if(data.length>=1){
 				data.forEach(function(item){
+					console.log("foreach문 실행");
 	        		html += `
 	        				<tr>
 								<td><a href="javascript:view(${item.postId})"><p style="margin : 0px">${item.postId}</p></a></td>

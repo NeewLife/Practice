@@ -42,7 +42,7 @@
 			</select>
 			<br>
 			<input id="startDate" name="startDate" type="date">   ~   <input id="endDate" name="endDate" type="date">
-			<button id="searchBtn" type="submit">검색</button>
+			<button id="searchBtn" type="button">검색</button>
 		</form>
 		
 		
