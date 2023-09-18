@@ -7,7 +7,6 @@ function goPage(num){
 	$(".bt_search").click();
 }
 
-	
 $(document).ready(function() {
 
 	$(".bt_search").on("click", function (){
@@ -26,8 +25,7 @@ $(document).ready(function() {
 				
 				listElement.empty();
 	      		listElement.html(data);
-	      		
-	      		
+
 	        }
 		});
 	});

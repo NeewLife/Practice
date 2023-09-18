@@ -1,9 +1,5 @@
 $(document).ready(function(){
 
-	$("#searchBtn").on("click", function(){
-		("#search").submit();
-	});
-
 	$("#search").on("change", function(){
 	
 		let searchType = $("#searchType").val();
@@ -11,7 +7,11 @@ $(document).ready(function(){
 		let authType = $("#authType").val();
 		let startDate = $("#startDate").val();
 		let endDate = $("#endDate").val();
-		
+		if(endDate == ''){
+		    var now = new Date();
+		    endDate = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate()
+		}
+
 		var html = '';
 		
 		$.ajax({
@@ -24,39 +24,33 @@ $(document).ready(function(){
 	        	 , "startDate":startDate
 	        	 , "endDate":endDate}, // 원하는 값을 중복확인하기위해서  JSON 형태로 DATA 전송
 	        success: function(data){
-	        	console.log(data);
 	        	$("#posts").empty();
 	        	if(data.length>=1){
 				data.forEach(function(item){
-					console.log("foreach문 실행");
 	        		html += `
-	        				<tr>
-								<td><a href="javascript:view(${item.postId})"><p style="margin : 0px">${item.postId}</p></a></td>
-								<td><a href="javascript:view(${item.postId})"><p style="margin : 0px">${item.writer}</p></a></td>
-								<td><a href="javascript:view(${item.postId})"><p style="margin : 0px">${item.title}</p></a></td>
-								<td><a href="javascript:view(${item.postId})"><p style="margin : 0px">${item.writeDate}</p></a></td>
-								<td><a href="javascript:view(${item.postId})"><p style="margin : 0px">${item.confirmDate}</p></a></td>
-								<td><a href="javascript:view(${item.postId})"><p style="margin : 0px">${item.confirmPerson}</p></a></td>
-		
-		 						<!-- 결재상태 DB 값에 따라 변경해서 결재상태 출력 -->
-							
+	        				<tr onclick="location.href='/view?postId=${item.postId}'" style="cursor:pointer">
+								<td>${item.postId}</td>
+								<td>${item.writer}</td>
+								<td>${item.title}</td>
+								<td>${item.writeDate}</td>
+								<td>${item.confirmDate}</td>
+								<td>${item.confirmPerson}</td>
 							`
-						console.log(item.confirmStatus);
 						switch(item.confirmStatus){
-							case 1:
-								html += `<td><a href='javascript:view(${item.postId})'><p style='margin : 0px'>임시저장</p></a></td></tr>`
+							case 'TEM':
+								html += `<td>임시저장</td></tr>`
 								break;
-							case 2:
-								html += `<td><a href="javascript:view(${item.postId})"><p style="margin : 0px">결재대기</p></a></td></tr>`
+							case 'WAIT':
+								html += `<td>결재대기</td></tr>`
 								break;
-							case 3:
-								html += `<td><a href="javascript:view(${item.postId})"><p style="margin : 0px">결재중</p></a></td></tr>`
+							case 'ING':
+								html += `<td>결재중</td></tr>`
 								break;
-							case 4:
-								html += `<td><a href="javascript:view(${item.postId})"><p style="margin : 0px">결재완료</p></a></td></tr>`
+							case 'FIN':
+								html += `<td>결재완료</td></tr>`
 								break;
-							case 5:
-								html += `<td><a href="javascript:view(${item.postId})"><p style="margin : 0px">반려</p></a></td></tr>`
+							case 'REJ':
+								html += `<td>반려</td></tr>`
 								break;
 						}
 	        		})
@@ -66,18 +60,56 @@ $(document).ready(function(){
 	        error : function(error){alert(error);}
 	    });
 	});
+
+    // 대리권한 취소했을 시 정보 초기화
+	$('.modal').on('hidden.bs.modal', function (e) {
+        $(this).find('#giveProxyForm')[0].reset();
+    });
+
+    // 대리권한
+	$(".proxyBtn").on("click", function(){
+		
+		$("#recipName").empty();
+		var html = "<option value='' selected='selected'>선택</option>";
+
+		$.ajax({
+	        type: 'post', 
+	        url: "/viewProxy", 
+	        dataType: "JSON",
+	        data: { userRank:userRank }, // 원하는 값을 중복확인하기위해서  JSON 형태로 DATA 전송
+	        success: function(data){
+	        	
+	        	if(data.length>=1){
+				data.forEach(function(item){
+					html += `
+							<option value=${item.userName} name="recipName">${item.userName}</option>
+							`
+					});
+	        		$("#recipName").append(html);
+        		}
+        		$("#recipName").on("change", function(){
+        			var values = $(this).val();
+        			var userData = $.grep(data, function(item) {
+					    return item.userName == values;
+					});
+					$("#recipRankKR").val(userData[0].userRankKR);
+					$("#recipRank").val(userData[0].userRank);
+					$("#recipId").val(userData[0].id);
+        		});
+	        }
+        });
+	});
 })
 
-
-
-function writePost(){
-	let url = "/write"
-	location.href = url;
-}
-
-function authorize(){
-	let url = "/view"
-	location.href = url;
+function giveProxy(){
+	let selectVal = document.getElementById('recipName');
+	let recipName = selectVal.options[selectVal.selectedIndex].value;
+	if(selectVal.value == ""){
+	    alert("대리결재자를 선택하세요");
+	    return false;
+	}
+	alert("대리결재자 : " + recipName + " 에게 권한이 부여되었습니다");
+	document.getElementById('giveProxyForm').submit();
 }
 
 function view(postId){

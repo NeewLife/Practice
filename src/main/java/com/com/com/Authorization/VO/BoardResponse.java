@@ -13,5 +13,5 @@ public class BoardResponse {
 	private String content = "";
 	private String confirmDate = "";
 	private String confirmPerson = "";
-	private int confirmStatus;
+	private String confirmStatus;
 }

@@ -25,7 +25,10 @@ import com.com.com.Authorization.Service.AuthorizationService;
 import com.com.com.Authorization.VO.BoardRequest;
 import com.com.com.Authorization.VO.BoardResponse;
 import com.com.com.Authorization.VO.MemberVO;
+import com.com.com.Authorization.VO.ProxyRequest;
+import com.com.com.Authorization.VO.ProxyResponse;
 import com.com.com.Authorization.VO.SearchVO;
+import sun.font.Script;
 
 
 @Controller
@@ -33,121 +36,96 @@ public class AuthorizationController {
 
 	@Autowired
 	public AuthorizationService authorizationService;
-	  
-	@Resource(name = "sqlSessionTemplate")
-	public SqlSessionTemplate sqlSession;
 
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public String home(Locale locale, Model model, HttpSession session) {
 		session.invalidate();
-		System.out.println("login 페이지 실행");
 		return "login";
 	}
-	 
-	@RequestMapping(value = "/login", produces = "application/json; charset=utf8")
-	@ResponseBody
-	public HashMap<String, Object> login(@RequestParam String loginId,
+
+	@RequestMapping(value = "/login", method = RequestMethod.POST)
+	public String login(@RequestParam String loginId,
 						@RequestParam String loginPw,
 						HttpSession session, Model model) {
-		
-		System.out.println("loginId = " + loginId.toString());
-		System.out.println("loginPw = " + loginPw.toString());
-
 		Map<String, Object> paramMap = new HashMap<String, Object>();
 		paramMap.put("loginId", loginId);
 		paramMap.put("loginPw", loginPw);
-			
-		int id = authorizationService.login(paramMap);
-	
-		HashMap<String, Object> result = new HashMap <String,Object>();
-		
-		result.put("message", "등록되지 않은 사용자입니다.");
-		if (id != 0) {
-			MemberVO memberVO = authorizationService.user(id);
-			if (memberVO.getUserPw().equals(loginPw)) {
-				System.out.println("로그인 성공");
-				result.put("user", memberVO);
-				result.replace("message", "로그인 성공");
-				session.setAttribute("memberVO", memberVO);
-				return result;
-			}else if(memberVO.getUserId() == null){
-				System.out.println("없는 유저입니다");
-			}
-			else {
-				System.out.println("비밀번호가 다름");
-				result.replace("message", "비밀번호가 일치하지 않습니다");
-				return result;
-			}
+
+		MemberVO member = authorizationService.login(paramMap);
+		model.addAttribute("user", member);
+		String msg = "";
+		if (member == null){
+			msg = "없는 회원입니다.";
+			model.addAttribute("msg", msg);
+			return "alert";
+		}else if (member.getUserPw().equals(loginPw) == false) {
+			msg = "비밀번호가 일치하지 않습니다";
+			model.addAttribute("msg", msg);
+			return "alert";
 		}
-		return result;
-		
+		session.setAttribute("memberVO", member);
+		return "redirect:/post";
 	}
+	
 	
 	@RequestMapping(value = "/post")
 	public String post(Model model, HttpServletRequest request , HttpServletResponse response
 					 , SearchVO searchVO) {
 		HttpSession session = request.getSession(false);
 		MemberVO sessionData = (MemberVO) session.getAttribute("memberVO");
-		if(sessionData == null) { 
-			return "redirect:/"; 
+		if(sessionData == null) {
+			return "redirect:/";
 		}
 		int id = sessionData.getId();
-		System.out.println("세션으로 넘어온 데이터 = " + id);
-		MemberVO memberVO = authorizationService.user(id);
-		System.out.println("memberVO = " + memberVO);
-		
-		session.setAttribute("session", memberVO);
-		
-		Map<String, Object> params = new HashMap<String, Object>();
+		ProxyResponse proxyVO = authorizationService.proxy(id); // 대리권한 있는지 id번호로 조회
+
+		session.setAttribute("session", sessionData);
+		session.setAttribute("proxyVO", proxyVO);
+
+		Map<String, Object> params = new HashMap<String, Object>(); //게시글 검색을 위해 넘겨줄 params 작업
 		params.put("id", id);
 		params.put("userRank", sessionData.getUserRank());
+		if(proxyVO != null) {
+			params.replace("userRank", proxyVO.getProxyRank());	// 만약 대리권한이 있다면 직급을 대리직급으로 덮어씌우기
+		}
 		params.put("userName", sessionData.getUserName());
-		params.put("searchType", searchVO.getSearchType());
-		params.put("keyword", searchVO.getKeyword());
-		params.put("authType", searchVO.getAuthType());
-		params.put("startDate", searchVO.getStartDate());
-		params.put("endDate", searchVO.getEndDate());
-		System.out.println("params 값 = " + params);
-		
-		List<BoardResponse> list = authorizationService.list(params);
-		model.addAttribute("user", memberVO);
+		params.put("searchVO", searchVO);
+
+		List<BoardResponse> list = authorizationService.list(params); //게시글 검색
+		model.addAttribute("user", sessionData);
+		model.addAttribute("proxy", proxyVO);
 		model.addAttribute("list", list);
-		System.out.println("==================================");
 		return "post";
 	}
 	
+	
+	// /post 페이지에서 AJax로 검색했을 때 호출
 	@RequestMapping(value = "/search")
-	@ResponseBody
+	@ResponseBody													
 	public List<BoardResponse> search(Model model, HttpServletRequest request , HttpServletResponse response
 					   , SearchVO searchVO) {
 		HttpSession session = request.getSession();
-		MemberVO sessionData = (MemberVO) session.getAttribute("memberVO");
+		MemberVO sessionData = (MemberVO) session.getAttribute("memberVO"); // 세션값 가져오기
 		if(sessionData == null) {
 			return null;
 		}
 		int id = sessionData.getId();
-		System.out.println("세션으로 넘어온 데이터 = " + id);
-		MemberVO memberVO = authorizationService.user(id);
-		System.out.println("memberVO = " + memberVO);
-		
-		session.setAttribute("session", memberVO);
+		ProxyResponse proxyVO = authorizationService.proxy(id);
+		session.setAttribute("session", sessionData);
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("id", id);
 		params.put("userRank", sessionData.getUserRank());
+		if(proxyVO != null) {
+			params.replace("userRank", proxyVO.getProxyRank());
+		}
 		params.put("userName", sessionData.getUserName());
-		params.put("searchType", searchVO.getSearchType());
-		params.put("keyword", searchVO.getKeyword());
-		params.put("authType", searchVO.getAuthType());
-		params.put("startDate", searchVO.getStartDate());
-		params.put("endDate", searchVO.getEndDate());
-		System.out.println("params 값 = " + params);
-		 
+		params.put("searchVO", searchVO);
+
 		List<BoardResponse> list = authorizationService.list(params);
-		System.out.println("==================================");
 		return list;
 		
 	}
-	
+
 	@RequestMapping(value = "/write")
 	public String write(@RequestParam(
 						value = "postId"
@@ -158,18 +136,16 @@ public class AuthorizationController {
 		if(sessionData == null) {
 			return "redirect:/";
 		}
-		System.out.println("== /write 로 넘어온 postId = " + postId);
 		int lastSeq = authorizationService.lastSeq();
 		model.addAttribute("lastSeq",lastSeq);
 		if(postId != 0) {
-			System.out.println("postId 있음! postId = " + postId);
 			BoardResponse post = authorizationService.view(postId);
 			model.addAttribute("post", post);
 		}
-		System.out.println("==================================");
 		return "write";
 	}
 	
+	// 새로운 글 생성
 	@RequestMapping(value = "/save")
 	public String save(BoardRequest boardRequest, HttpServletRequest request) {
 		HttpSession session = request.getSession();
@@ -183,6 +159,7 @@ public class AuthorizationController {
 		return "redirect:/post";
 	}
 	
+	// 기존에 글이 있을 시 수정
 	@RequestMapping(value = "/update")
 	public String update(BoardRequest boardRequest, HttpServletRequest request) {
 		HttpSession session = request.getSession();
@@ -190,12 +167,14 @@ public class AuthorizationController {
 		if(sessionData == null) {
 			return "redirect:/";
 		}
+
 		int writerPkNum = sessionData.getId();
 		boardRequest.setWriterPkNum(writerPkNum);
 		authorizationService.update(boardRequest);
 		
 		return "redirect:/post";
 	}
+	
 	
 	@RequestMapping(value = "/reject")
 	public String reject(@RequestParam int postId, HttpServletRequest request) {
@@ -204,20 +183,17 @@ public class AuthorizationController {
 		if(sessionData == null) {
 			return "redirect:/";
 		}
-		String userName = sessionData.getUserName();
+		int id = sessionData.getId();
+		ProxyResponse proxyVO = authorizationService.proxy(sessionData.getId());
 		Map<String, Object> params = new HashMap<String, Object>();
-		SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		Date now = new Date();
-		String nowTime = sdf1.format(now);
-		params.put("confirmDate", nowTime);
 		params.put("postId",postId);
-		params.put("confirmPerson", userName);
-		params.put("confirmStatus", '5');
-		System.out.println("reject 에서 params 로 넘어온 데이터" + params);
+		params.put("confirmPerson", id);
+		params.put("confirmStatus", "REJ");
 		authorizationService.reject(params);
 		authorizationService.creHistory(params);
 		return "redirect:/post";
 	}
+	
 	
 	@RequestMapping(value = "/confirm")
 	public String confirm(@RequestParam int postId, HttpServletRequest request) {
@@ -226,26 +202,25 @@ public class AuthorizationController {
 		if(sessionData == null) {
 			return "redirect:/";
 		}
+		ProxyResponse proxyVO = authorizationService.proxy(sessionData.getId());
 		String userRank = sessionData.getUserRank();
-		String userName = sessionData.getUserName();
+
+		if (proxyVO != null){
+			userRank = proxyVO.getProxyRank();
+		}
+		int id = sessionData.getId();
+		
 		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("postId",postId);
-		params.put("confirmPerson", userName);
-		SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		Date now = new Date();
-		String nowTime = sdf1.format(now);
-		params.put("confirmDate", nowTime);
-		
-		if(userRank.equals("과장")) {
-			System.out.println("== userRank = 과장");
-			params.put("confirmStatus", 3);
+		params.put("confirmPerson", id);
+
+		if(userRank.equals("EXA")) {
+			params.put("confirmStatus", "ING");
 		}
-		else if(userRank.equals("부장")) {
-			System.out.println("== userRank = 부장");
-			params.put("confirmStatus", 4);
+		else if(userRank.equals("DH")) {
+			params.put("confirmStatus", "FIN");
 		}
 		else {
-			System.out.println("잘못된 접근입니다.");
 			return "redirect:/post";
 		}
 		authorizationService.confirm(params);
@@ -253,26 +228,52 @@ public class AuthorizationController {
 		return "redirect:/post";
 	}
 	
+	// 상세 페이지
 	@RequestMapping(value = "/view")
 	public String view(@RequestParam int postId, HttpServletRequest request, Model model) {
 		HttpSession session = request.getSession();
-		System.out.println("view 에서 session = " + session.getAttribute("session"));
-		System.out.println("넘어온 postId = " + postId);
 		MemberVO sessionData = (MemberVO) session.getAttribute("memberVO");
 		if(sessionData == null) {
 			return "redirect:/";
 		}
 		int id = sessionData.getId();
 		BoardResponse post = authorizationService.view(postId);
-		if(post.getConfirmStatus() == 1 && post.getWriterPkNum() == id) {
+		if(post.getConfirmStatus().equals("TEM")  && post.getWriterPkNum() == id) {
 			model.addAttribute("post", post);
 			return "write";
 		}
 		List<Map<String, Object>> postHistory = authorizationService.history(postId);
 		model.addAttribute("post", post);
 		model.addAttribute("history", postHistory);
-		System.out.println("==================================");
 		return "view";
 	}
+	
+	// post페이지의 대리결재버튼 누르면 AJax 로 호출되는 함수
+	@RequestMapping(value = "/viewProxy")
+	@ResponseBody
+	public List<Map<String, Object>> proxyList(@RequestParam String userRank) {
+		SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		Date now = new Date();
+		String nowTime = sdf1.format(now);
+		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("userRank", userRank);
+		params.put("nowTime", nowTime);
+		List<Map<String, Object>> pxList = authorizationService.proxyList(params);
+		return pxList;
+	}
+	
+	// 대리권한 부여할 때 호출하는 함수
+	@RequestMapping(value = "/giveProxy")
+	public String giveProxy(@RequestParam int recipId, HttpServletRequest request) {
+		HttpSession session = request.getSession();
+		MemberVO sessionData = (MemberVO) session.getAttribute("memberVO");
+		ProxyRequest params = new ProxyRequest();
+		params.setId(recipId);
+		params.setProxyId(sessionData.getId());
+		params.setProxyName(sessionData.getUserName());
+		authorizationService.giveProxy(params);
+		return "redirect:/post";
+	}
+	
 }
  

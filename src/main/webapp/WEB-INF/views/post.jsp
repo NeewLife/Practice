@@ -3,24 +3,72 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<meta charset="UTF-8">
-	<title>게시판 페이지</title>
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
-	<link href="${path}/resources/css/post.css" rel="stylesheet">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<meta charset="UTF-8">
+<title>게시판 페이지</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+<script type="text/javascript">
+	var userRank = '${user.userRank}';
+</script>
+<script src="${path}/resources/js/post.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+<link href="${path}/resources/css/post.css" rel="stylesheet">
 	
 </head>
 <body>
 <div class="container">
 	<div class="screen">
 		<header>
-			<div class="greet"> 
-				${user.userName}(${user.userRank})님 환영합니다.
+			<div class="greet" style="width: 820px;">
+				${user.userName}(${user.userRankKR})
+				<c:if test="${proxy != null }"> - ${proxy.proxyName}(${proxy.proxyRankKR})</c:if>님 환영합니다.
 				<button type="button" class="logoutBtn" onclick="location.href='/'">로그아웃</button>
+				<c:if test="${proxy != null }">
+					<div>(대리결재일 : ${proxy.stDate } ~ ${proxy.endDate })</div>
+				</c:if>
 			</div>
-				<button class="writeBtn" onclick="writePost()">글쓰기</button>
-				<c:if test="${user.userRank eq '부장' or user.userRank eq '과장'}">
-					<button type="button" class="authorizeBtn">대리결재</button>
+				<button class="writeBtn" onclick="location.href = '/write';">글쓰기</button>
+				<c:if test="${user.userRank eq 'DH' or user.userRank eq 'EXA'}">
+					<button type="button" class="proxyBtn" data-bs-toggle="modal" data-bs-target="#proxyModal">
+						대리결재
+					</button>
+					<!-- Button trigger modal -->
+					
+					<!-- Modal -->
+					<div class="modal fade" id="proxyModal" tabindex="-1" aria-labelledby="proxyModalLabel" aria-hidden="true">
+					    <div class="modal-dialog modal-dialog-centered">
+					    	<div class="modal-content">
+					        	<div class="modal-header">
+						        	<h1 class="modal-title fs-5" id="proxyModalLabel">대리결재 권한부여</h1>
+						        	<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					      		</div>
+					      		<form id="giveProxyForm" action="/giveProxy" method="post">
+							      	<div class="modal-body">
+								        <div class="input-group mb-2">
+										    <label class="input-group-text" for="recipName">대리결재자</label>
+										    <select class="form-select" id="recipName">
+										    	
+										    </select>
+										</div>
+									    <div class="input-group mb-2">
+										    <span class="input-group-text" id="basic-addon3">직급 : </span>
+										    <input type="text" class="form-control" id="recipRankKR" name="recipRankKR" aria-describedby="basic-addon3 basic-addon4" readonly>
+										    <input type="hidden" id="recipId" name="recipId">
+										    <input type="hidden" id="recipRank" name="recipRank">
+									    </div>
+									    <div class="input-group mb-2">
+										    <span class="input-group-text" id="basic-addon4">대리자 : </span>
+										    <input type="text" class="form-control" id="superior" name="superior" aria-describedby="basic-addon3 basic-addon4" value="${user.userRankKR}" readonly>
+									    </div>
+							        </div>
+							        <div class="modal-footer">
+							      	  	<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+							        	<button type="button" class="btn btn-primary" onclick="giveProxy()">권한 부여</button>
+							      	</div>
+						      	</form>
+				    		</div>
+					  	</div>
+					</div>
 				</c:if>
 		</header>
 		
@@ -34,15 +82,15 @@
 			<input id="keyword" name="keyword" type="text" placeholder="검색어를 입력하세요">
 			<select id="authType" name="authType">
 				<option value="">결재상태</option>
-				<option value="1">임시저장</option>
-				<option value="2">결재대기</option>
-				<option value="3">결재중</option>
-				<option value="4">결재완료</option>
-				<option value="5">반려</option>
+				<option value="TEM">임시저장</option>
+				<option value="WAIT">결재대기</option>
+				<option value="ING">결재중</option>
+				<option value="FIN">결재완료</option>
+				<option value="REJ">반려</option>
 			</select>
 			<br>
 			<input id="startDate" name="startDate" type="date">   ~   <input id="endDate" name="endDate" type="date">
-			<button id="searchBtn" type="button">검색</button>
+			<button id="searchBtn" type="submit">검색</button>
 		</form>
 		
 		
@@ -60,25 +108,23 @@
 			</thead>
 			<tbody id="posts">
 				<c:forEach items="${list}" var="list">
-					<tr>
-						<td><a href="javascript:view(${list.postId})"><p style="margin : 0px">${list.postId}</p></a></td>
-						<td><a href="javascript:view(${list.postId})"><p style="margin : 0px">${list.writer}</p></a></td>
-						<td><a href="javascript:view(${list.postId})"><p style="margin : 0px">${list.title}</p></a></td>
-						<td><a href="javascript:view(${list.postId})"><p style="margin : 0px">${list.writeDate}</p></a></td>
-						<td><a href="javascript:view(${list.postId})"><p style="margin : 0px">${list.confirmDate}</p></a></td>
-						<td><a href="javascript:view(${list.postId})"><p style="margin : 0px">${list.confirmPerson}</p></a></td>
+					<tr onclick="location.href='/view?postId=${list.postId}'" style="cursor:pointer">
+						<td>${list.postId}</td>
+						<td>${list.writer}</td>
+						<td>${list.title}</td>
+						<td>${list.writeDate}</td>
+						<td>${list.confirmDate}</td>
+						<td>${list.confirmPerson}</td>
 
  						<!-- 결재상태 DB 값에 따라 변경해서 결재상태 출력 -->
 						<td>
-							<a href="javascript:view(${list.postId})"><p style="margin : 0px">
 								<c:choose>
-									<c:when test="${list.confirmStatus eq 1 }" >임시저장</c:when>
-									<c:when test="${list.confirmStatus eq 2 }" >결재대기</c:when>
-									<c:when test="${list.confirmStatus eq 3 }" >결재중</c:when>
-									<c:when test="${list.confirmStatus eq 4 }" >결재완료</c:when>
-									<c:when test="${list.confirmStatus eq 5 }" >반려</c:when>
+									<c:when test="${list.confirmStatus eq 'TEM' }" >임시저장</c:when>
+									<c:when test="${list.confirmStatus eq 'WAIT' }" >결재대기</c:when>
+									<c:when test="${list.confirmStatus eq 'ING' }" >결재중</c:when>
+									<c:when test="${list.confirmStatus eq 'FIN' }" >결재완료</c:when>
+									<c:when test="${list.confirmStatus eq 'REJ' }" >반려</c:when>
 								</c:choose>
-							</p></a>
 						</td>
 					</tr>
 				</c:forEach>
@@ -87,6 +133,5 @@
 	</div>
 </div>
 <%-- 	<div class="greet"> ${sessionScope.session.userId}님 환영합니다</div> --%>
-<script src="${path}/resources/js/post.js"></script>
 </body>
 </html>

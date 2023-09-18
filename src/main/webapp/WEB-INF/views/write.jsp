@@ -9,12 +9,11 @@
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link href="${path}/resources/css/write.css" rel="stylesheet">
 	<script src="https://code.jquery.com/jquery-3.7.0.js" ></script>
-	<script src="${path}/resources/js/write.js"></script>
 </head>
 <body>
 	<div class="container">
 		<div class="screen">
-	
+	 
 			<a href="/post">목록으로</a>
 		
 			<div class="chkBoxTable">
@@ -58,14 +57,22 @@
 						<br>
 						<label for="content">내용 : </label>
 						<textarea placeholder="내용" id="content" name="content" >${post.content }</textarea>
+						<input type="hidden" id="confirmStatus" name="confirmStatus">
 					</fieldset>
 				</form>
 				<div id="submitButton">
-					<button type="button" onclick="temporary()" class="btn btn-secondary">임시저장</button>
-					<button type="button" onclick="request()" class="btn btn-primary">결재요청</button>
+					<button type="button" onclick="save('TEM')" class="btn btn-secondary">임시저장</button>
+					<button type="button" onclick="save('WAIT')" class="btn btn-primary">결재요청</button>
 				</div>
 			</div>
 		</div>
 	</div>
 </body>
+<script>
+    function save(status){
+    	document.getElementById('confirmStatus').value = status;
+    	let form = document.querySelector("form");
+    	form.submit();
+    }
+</script>
 </html>

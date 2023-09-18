@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 import com.com.com.Authorization.VO.BoardRequest;
 import com.com.com.Authorization.VO.BoardResponse;
 import com.com.com.Authorization.VO.MemberVO;
+import com.com.com.Authorization.VO.ProxyRequest;
+import com.com.com.Authorization.VO.ProxyResponse;
 
 
 @Repository("authorizationDAO")
@@ -20,16 +22,27 @@ public class AuthorizationDAOImpl implements AuthorizationDAO{
 	SqlSession sqlSession;
 	
 	@Override
-	public int login(Map<String, Object> params) {
-		if(sqlSession.selectOne("mapper.isUser", params).equals(1)){
-			return sqlSession.selectOne("mapper.login", params);
-		}
-		return 0;
+	public MemberVO login(Map<String, Object> params) {
+		return sqlSession.selectOne("mapper.login", params);
 	}
 	
 	@Override
-	public MemberVO user(int id) {
-		return sqlSession.selectOne("mapper.user", id);
+	public ProxyResponse proxy(int id) {
+		if(sqlSession.selectOne("mapper.hasProxy", id).equals(0)) {
+			return null;
+		}
+		return sqlSession.selectOne("mapper.proxy", id);
+	}
+	
+	@Override
+	public List<Map<String, Object>> proxyList(Map<String, Object> params) {
+		System.out.println(sqlSession.selectList("mapper.nonProxy", params));
+		return sqlSession.selectList("mapper.nonProxy", params);
+	}
+	
+	@Override
+	public void giveProxy(ProxyRequest params) {
+		sqlSession.insert("mapper.giveProxy", params);
 	}
 	
 	@Override
@@ -60,7 +73,7 @@ public class AuthorizationDAOImpl implements AuthorizationDAO{
 	@Override
 	public void save(BoardRequest params) {
 		sqlSession.insert("mapper.save", params);
-		if(params.getConfirmStatus() != 1) {
+		if(!params.getConfirmStatus().equals("TEM")) {
 			sqlSession.insert("mapper.creHistory", params);
 		}
 	}
@@ -68,7 +81,7 @@ public class AuthorizationDAOImpl implements AuthorizationDAO{
 	@Override
 	public void update(BoardRequest params) {
 		sqlSession.update("mapper.update", params);
-		if(params.getConfirmStatus() != 1) {
+		if(!params.getConfirmStatus().equals("TEM")) {
 			sqlSession.insert("mapper.creHistory", params);
 		}
 	}

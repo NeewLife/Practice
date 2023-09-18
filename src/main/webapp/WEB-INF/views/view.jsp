@@ -9,7 +9,6 @@
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link href="${path}/resources/css/view.css" rel="stylesheet">
 	<script src="https://code.jquery.com/jquery-3.7.0.js" ></script>
-	<script type="text/javascript" src="${path}/resources/js/view.js"></script> 
 </head>
 <body>
 	<div class="container">
@@ -29,7 +28,7 @@
 					</thead>
 					<tbody>
 						<tr>
-						<c:if test="${post.confirmStatus == 2 }">
+						<c:if test="${post.confirmStatus == 'WAIT' }">
 							<td class="checkbox-wrapper-39">
 								<label>
 									<input type="checkbox" checked onclick="return false">
@@ -49,7 +48,7 @@
 								</label>
 							</td>
 						</c:if>
-						<c:if test="${post.confirmStatus == 3 }">
+						<c:if test="${post.confirmStatus == 'ING' }">
 							<td class="checkbox-wrapper-39">
 								<label>
 									<input type="checkbox" checked onclick="return false">
@@ -69,7 +68,7 @@
 								</label>
 							</td>
 						</c:if>
-						<c:if test="${post.confirmStatus == 4 }">
+						<c:if test="${post.confirmStatus == 'FIN' }">
 							<td class="checkbox-wrapper-39">
 								<label>
 									<input type="checkbox" checked onclick="return false">
@@ -106,26 +105,27 @@
 						<label for="title">제목 :</label>
 						<input type="text" id="title" value="${post.title }" readonly="readonly">
 						<br>
-						<label for="content">내용 : </label>
-						<textarea placeholder="내용" id="content" readonly="readonly">${post.content }</textarea>
+                        <label for="content">내용</label>
+                        <textarea class="form-control" placeholder="내용" id="content" readonly="readonly">${post.content }</textarea>
 					</fieldset>
+
 					<div id="submitButton">
 						<c:choose>
-							<c:when test="${sessionScope.session.userRank == '과장'}">
-								<c:if test="${post.confirmStatus == '2'}">
-									<button type="button" onclick="reject()" class="btn btn-warning">반려</button>
-									<button type="button" onclick="approval()" class="btn btn-primary">결재</button>
+							<c:when test="${sessionScope.session.userRank == 'EXA' || sessionScope.proxyVO.proxyRank == 'EXA'}">
+								<c:if test="${post.confirmStatus == 'WAIT'}">
+									<button type="button" onclick="formSubmit('reject')" class="btn btn-warning">반려</button>
+									<button type="button" onclick="formSubmit('confirm')" class="btn btn-primary">결재</button>
 								</c:if>
 							</c:when>
-							<c:when test="${sessionScope.session.userRank == '부장'}">
-								<c:if test="${post.confirmStatus == '2' || post.confirmStatus == '3'}">
-									<button type="button" onclick="reject()" class="btn btn-warning">반려</button>
-									<button type="button" onclick="approval()" class="btn btn-primary">결재</button>
+							<c:when test="${sessionScope.session.userRank == 'DH' || sessionScope.proxyVO.proxyRank == 'DH'}">
+								<c:if test="${post.confirmStatus == 'WAIT' || post.confirmStatus == 'ING'}">
+									<button type="button" onclick="formSubmit('reject')" class="btn btn-warning">반려</button>
+									<button type="button" onclick="formSubmit('confirm')" class="btn btn-primary">결재</button>
 								</c:if>
 							</c:when>
 						</c:choose>
-						<c:if test="${sessionScope.session.id == post.writerPkNum && post.confirmStatus == 5}">
-							<button type="button" onclick="modify()" class="btn btn-secondary">수정</button>
+						<c:if test="${sessionScope.session.id == post.writerPkNum && post.confirmStatus == 'REJ'}">
+							<button type="button" onclick="formSubmit('write')" class="btn btn-secondary">수정</button>
 						</c:if>
 					</div>
 				</form>
@@ -148,11 +148,11 @@
 							<td>${history.confirmPerson }</td>
 							<td>
 								<c:choose>
-									<c:when test="${history.confirmStatus eq '1' }" >임시저장</c:when>
-									<c:when test="${history.confirmStatus eq '2' }" >결재대기</c:when>
-									<c:when test="${history.confirmStatus eq '3' }" >결재중</c:when>
-									<c:when test="${history.confirmStatus eq '4' }" >결재완료</c:when>
-									<c:when test="${history.confirmStatus eq '5' }" >반려</c:when>
+									<c:when test="${history.confirmStatus eq 'TEM' }" >임시저장</c:when>
+									<c:when test="${history.confirmStatus eq 'WAIT' }" >결재대기</c:when>
+									<c:when test="${history.confirmStatus eq 'ING' }" >결재중</c:when>
+									<c:when test="${history.confirmStatus eq 'FIN' }" >결재완료</c:when>
+									<c:when test="${history.confirmStatus eq 'REJ' }" >반려</c:when>
 								</c:choose>
 							</td>
 						</tr>
@@ -162,4 +162,12 @@
 		</div>
 	</div>
 </body>
+<script>
+    function formSubmit(msg){
+    	let form = document.getElementById("approval");
+    	let url = "/" + msg
+    	form.setAttribute("action",url);
+    	form.submit();
+    }
+</script>
 </html>
