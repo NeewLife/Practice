@@ -13,5 +13,6 @@ public class BoardRequest {
 	private String confirmDate;
 	private String confirmPerson;
 	private String confirmStatus;
+	private int proxyConfirmPerson;
 }
 	

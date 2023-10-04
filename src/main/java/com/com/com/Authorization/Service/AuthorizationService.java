@@ -12,7 +12,7 @@ import com.com.com.Authorization.VO.ProxyResponse;
 public interface AuthorizationService {
 	public MemberVO login(Map<String, Object> params);
 	
-	public ProxyResponse proxy(int id);
+	public ProxyResponse proxy(Map<String, Object> params);
 
 	public List<BoardResponse> list(Map<String, Object> params);
 	

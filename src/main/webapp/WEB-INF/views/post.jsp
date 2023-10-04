@@ -58,7 +58,7 @@
 									    </div>
 									    <div class="input-group mb-2">
 										    <span class="input-group-text" id="basic-addon4">대리자 : </span>
-										    <input type="text" class="form-control" id="superior" name="superior" aria-describedby="basic-addon3 basic-addon4" value="${user.userRankKR}" readonly>
+										    <input type="text" class="form-control" id="superior" name="superior" aria-describedby="basic-addon3 basic-addon4" value="${user.userName}" readonly>
 									    </div>
 							        </div>
 							        <div class="modal-footer">
@@ -114,7 +114,7 @@
 						<td>${list.title}</td>
 						<td>${list.writeDate}</td>
 						<td>${list.confirmDate}</td>
-						<td>${list.confirmPerson}</td>
+						<td>${list.confirmPerson}<c:if test="${not empty list.proxyConfirmPerson}">(${list.proxyConfirmPerson})</c:if></td>
 
  						<!-- 결재상태 DB 값에 따라 변경해서 결재상태 출력 -->
 						<td>
@@ -130,6 +130,11 @@
 				</c:forEach>
 			</tbody>
 		</table>
+		<c:if test="${empty list}">
+            <div class="listIsEmpty">
+                검색된 게시글이 없습니다
+            </div>
+        </c:if>
 	</div>
 </div>
 <%-- 	<div class="greet"> ${sessionScope.session.userId}님 환영합니다</div> --%>

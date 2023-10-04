@@ -14,6 +14,7 @@
   		,CONTENT AS content
   		,CONFIRM_DATE AS confirmDate
   		,(SELECT USER_NAME FROM SY_MEMBER sm WHERE sb.CONFIRM_PERSON = sm.ID) AS confirmPerson
+		,(SELECT USER_NAME FROM SY_MEMBER sm WHERE sb.PROXY_CONFIRM_PERSON = sm.ID) AS proxyConfirmPerson
   		,CONFIRM_STATUS AS confirmStatus
   	</sql>
 
@@ -27,6 +28,7 @@
         <result column="CONFIRM_DATE" property="confirmDate"/>
         <result column="CONFIRM_PERSON" property="confirmPerson"/>
         <result column="CONFIRM_STATUS" property="confirmStatus"/>
+        <result column="PROXY_CONFIRM_PERSON" property="proxyConfirmPerson"/>
   	</resultMap>
   	
   	<resultMap type="map" id="nonProxy">
@@ -99,10 +101,12 @@
 	    			  (sb.CONFIRM_STATUS = 'WAIT'
 						OR sb.CONFIRM_STATUS = 'ING'
 						OR sb.CONFIRM_STATUS = 'REJ')
-					AND ((SELECT USER_NAME FROM SY_MEMBER sm WHERE sb.CONFIRM_PERSON = sm.ID) = #{userName}
-						OR sb.CONFIRM_PERSON IS NULL)
+					AND ((SELECT USER_NAME FROM SY_MEMBER sm WHERE sb.CONFIRM_PERSON = sm.ID ) = #{userName}
+						OR sb.CONFIRM_PERSON IS NULL
+						)
 	    			) 
 	    			OR sb.WRITER_PK_NUM = #{id}
+					OR sb.PROXY_CONFIRM_PERSON = #{id}
 	    		</otherwise>
     		</choose>
     	</if>
@@ -126,10 +130,13 @@
 		SELECT COUNT(ID)
 		FROM SY_PROXY
 		WHERE ID = #{id}
+		AND END_DATE > TO_DATE(#{now}, 'yyyy-mm-dd hh24:mi:ss')
 	</select>
 	
 	<select id="proxy" resultType="com.com.com.Authorization.VO.ProxyResponse">
-		SELECT (SELECT USER_NAME
+		SELECT
+			   PROXY_ID AS proxyId
+			 , (SELECT USER_NAME
 				FROM SY_MEMBER sm
 				WHERE sp.PROXY_ID = sm.ID) proxyName
 			 , (SELECT USER_RANK
@@ -142,7 +149,7 @@
 			 , END_DATE AS endDate
 		FROM SY_PROXY sp
 		WHERE ID = #{id}
-			AND END_DATE > sysdate
+			AND END_DATE > CURRENT_DATE
 	</select>
 	
 	<select id="nonProxy" resultMap="nonProxy">
@@ -196,6 +203,7 @@
 			, CONFIRM_DATE
 			, (SELECT USER_NAME FROM SY_MEMBER sm WHERE h.CONFIRM_PERSON = sm.ID) CONFIRM_PERSON
 			, CONFIRM_STATUS
+			, (SELECT USER_NAME FROM SY_MEMBER sm WHERE h.PROXY_CONFIRM_PERSON = sm.ID) PROXY_CONFIRM_PERSON
 		FROM SY_HISTORY h
 		WHERE POST_ID = #{postId}
 		ORDER BY seq
@@ -216,6 +224,7 @@
 			, CONFIRM_DATE
 			, CONFIRM_PERSON
 			, CONFIRM_STATUS
+			, PROXY_CONFIRM_PERSON
   		)
   		VALUES (
 			(SELECT NVL(MAX(POST_ID), 0) + 1 AS postId FROM SY_BOARD)
@@ -226,6 +235,7 @@
 			, NULL
 			, NULL
 			, #{confirmStatus}
+			, NULL
   		)
   	</insert>
   	
@@ -236,6 +246,7 @@
   			, CONFIRM_DATE
   			, CONFIRM_PERSON
   			, CONFIRM_STATUS
+			, PROXY_CONFIRM_PERSON
   		)
   		VALUES (
   			#{postId}
@@ -247,6 +258,7 @@
   			, sysdate
   			, #{confirmPerson, jdbcType=VARCHAR}
   			, #{confirmStatus}
+			, #{proxyConfirmPerson, jdbcType=VARCHAR}
   		)
 	</insert>
   	
@@ -274,6 +286,7 @@
   			, CONFIRM_STATUS = #{confirmStatus}
   			, CONFIRM_DATE = ''
   			, CONFIRM_PERSON = ''
+			, PROXY_CONFIRM_PERSON = ''
 		WHERE POST_ID = #{postId}
   	</update>
   	
@@ -283,6 +296,7 @@
   			CONFIRM_DATE = sysdate
   			, CONFIRM_PERSON = #{confirmPerson}
   			, CONFIRM_STATUS = 'REJ'
+			, PROXY_CONFIRM_PERSON = #{proxyConfirmPerson, jdbcType=INTEGER}
 		WHERE POST_ID = #{postId}
   	</update>
   	
@@ -292,6 +306,7 @@
   			CONFIRM_DATE = sysdate
   			, CONFIRM_PERSON = #{confirmPerson}
   			, CONFIRM_STATUS = #{confirmStatus}
+			, PROXY_CONFIRM_PERSON = #{proxyConfirmPerson, jdbcType=INTEGER}
 		WHERE POST_ID = #{postId}
   	</update>
   	

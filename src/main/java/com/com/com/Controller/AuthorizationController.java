@@ -1,6 +1,10 @@
 package com.com.com.Controller;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +18,7 @@ import javax.servlet.http.HttpSession;
 
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +38,10 @@ import sun.font.Script;
 
 @Controller
 public class AuthorizationController {
+
+	LocalDateTime now = LocalDateTime.now();
+	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	String formatedNow = now.format(formatter);
 
 	@Autowired
 	public AuthorizationService authorizationService;
@@ -76,14 +85,17 @@ public class AuthorizationController {
 		if(sessionData == null) {
 			return "redirect:/";
 		}
+		Map<String, Object> params = new HashMap<String, Object>(); // 검색을 위해 넘겨줄 params 작업
 		int id = sessionData.getId();
-		ProxyResponse proxyVO = authorizationService.proxy(id); // 대리권한 있는지 id번호로 조회
+
+		params.put("id", id);
+		params.put("now", formatedNow);
+
+		ProxyResponse proxyVO = authorizationService.proxy(params); // 대리권한 있는지 id번호로 조회
 
 		session.setAttribute("session", sessionData);
 		session.setAttribute("proxyVO", proxyVO);
 
-		Map<String, Object> params = new HashMap<String, Object>(); //게시글 검색을 위해 넘겨줄 params 작업
-		params.put("id", id);
 		params.put("userRank", sessionData.getUserRank());
 		if(proxyVO != null) {
 			params.replace("userRank", proxyVO.getProxyRank());	// 만약 대리권한이 있다면 직급을 대리직급으로 덮어씌우기
@@ -95,6 +107,9 @@ public class AuthorizationController {
 		model.addAttribute("user", sessionData);
 		model.addAttribute("proxy", proxyVO);
 		model.addAttribute("list", list);
+		if (list == null){
+			System.out.println("list 비었는가 = " + list.isEmpty());
+		}
 		return "post";
 	}
 	
@@ -109,11 +124,14 @@ public class AuthorizationController {
 		if(sessionData == null) {
 			return null;
 		}
-		int id = sessionData.getId();
-		ProxyResponse proxyVO = authorizationService.proxy(id);
-		session.setAttribute("session", sessionData);
 		Map<String, Object> params = new HashMap<String, Object>();
+		int id = sessionData.getId();
 		params.put("id", id);
+		params.put("now", formatedNow);
+		ProxyResponse proxyVO = authorizationService.proxy(params);
+		session.setAttribute("session", sessionData);
+
+
 		params.put("userRank", sessionData.getUserRank());
 		if(proxyVO != null) {
 			params.replace("userRank", proxyVO.getProxyRank());
@@ -183,12 +201,18 @@ public class AuthorizationController {
 		if(sessionData == null) {
 			return "redirect:/";
 		}
-		int id = sessionData.getId();
-		ProxyResponse proxyVO = authorizationService.proxy(sessionData.getId());
 		Map<String, Object> params = new HashMap<String, Object>();
+		int id = sessionData.getId();
+		params.put("id", id);
+		params.put("now", formatedNow);
+		ProxyResponse proxyVO = authorizationService.proxy(params);
+
 		params.put("postId",postId);
 		params.put("confirmPerson", id);
 		params.put("confirmStatus", "REJ");
+		if (proxyVO != null){
+			params.put("proxyConfirmPerson", proxyVO.getProxyId());
+		}
 		authorizationService.reject(params);
 		authorizationService.creHistory(params);
 		return "redirect:/post";
@@ -202,17 +226,22 @@ public class AuthorizationController {
 		if(sessionData == null) {
 			return "redirect:/";
 		}
-		ProxyResponse proxyVO = authorizationService.proxy(sessionData.getId());
+		Map<String, Object> params = new HashMap<String, Object>();
+		int id = sessionData.getId();
+		params.put("id", id);
+		params.put("now", formatedNow);
+
+		ProxyResponse proxyVO = authorizationService.proxy(params);
 		String userRank = sessionData.getUserRank();
 
 		if (proxyVO != null){
 			userRank = proxyVO.getProxyRank();
+			params.put("proxyConfirmPerson", proxyVO.getProxyId());
 		}
-		int id = sessionData.getId();
-		
-		Map<String, Object> params = new HashMap<String, Object>();
+
 		params.put("postId",postId);
 		params.put("confirmPerson", id);
+
 
 		if(userRank.equals("EXA")) {
 			params.put("confirmStatus", "ING");

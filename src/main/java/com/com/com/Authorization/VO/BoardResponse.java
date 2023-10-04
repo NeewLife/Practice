@@ -13,5 +13,6 @@ public class BoardResponse {
 	private String content = "";
 	private String confirmDate = "";
 	private String confirmPerson = "";
+	private String proxyConfirmPerson;
 	private String confirmStatus;
 }

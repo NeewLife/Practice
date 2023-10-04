@@ -27,11 +27,11 @@ public class AuthorizationDAOImpl implements AuthorizationDAO{
 	}
 	
 	@Override
-	public ProxyResponse proxy(int id) {
-		if(sqlSession.selectOne("mapper.hasProxy", id).equals(0)) {
+	public ProxyResponse proxy(Map<String, Object> params) {
+		if(sqlSession.selectOne("mapper.hasProxy", params).equals(0)) {
 			return null;
 		}
-		return sqlSession.selectOne("mapper.proxy", id);
+		return sqlSession.selectOne("mapper.proxy", params);
 	}
 	
 	@Override

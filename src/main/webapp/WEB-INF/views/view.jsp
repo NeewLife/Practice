@@ -145,7 +145,7 @@
 						<tr>
 							<td>${history.seq }</td>
 							<td>${history.confirmDate }</td>
-							<td>${history.confirmPerson }</td>
+							<td>${history.confirmPerson }<c:if test="${not empty history.proxyConfirmPerson}">(${history.proxyConfirmPerson})</c:if></td>
 							<td>
 								<c:choose>
 									<c:when test="${history.confirmStatus eq 'TEM' }" >임시저장</c:when>

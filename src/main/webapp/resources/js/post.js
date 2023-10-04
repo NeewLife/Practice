@@ -34,8 +34,12 @@ $(document).ready(function(){
 								<td>${item.title}</td>
 								<td>${item.writeDate}</td>
 								<td>${item.confirmDate}</td>
-								<td>${item.confirmPerson}</td>
 							`
+							if(item.proxyConfirmPerson != null){
+							    html += `<td>${item.confirmPerson}(${item.proxyConfirmPerson})</td>`
+							}else{
+							    html += `<td>${item.confirmPerson}</td>`
+							}
 						switch(item.confirmStatus){
 							case 'TEM':
 								html += `<td>임시저장</td></tr>`
@@ -54,8 +58,12 @@ $(document).ready(function(){
 								break;
 						}
 	        		})
-	        		$("#posts").append(html);
         		}
+        		else{
+        		    html += `<div class="listIsEmpty">검색된 내용이 없습니다</div>`
+        		}
+        		console.log(html);
+        		$("#posts").append(html);
 	        },
 	        error : function(error){alert(error);}
 	    });

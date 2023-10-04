@@ -35,8 +35,8 @@ public class AuthorizationServiceImpl implements AuthorizationService{
 	 * @return 대리권한 정보
 	 */
 	@Override
-	public ProxyResponse proxy(int id) {
-		return authorizationDAO.proxy(id);
+	public ProxyResponse proxy(Map<String, Object> params) {
+		return authorizationDAO.proxy(params);
 	}
 
 	/**
